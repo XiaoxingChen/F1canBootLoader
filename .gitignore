@@ -1,0 +1,13 @@
+*.o
+*.d
+*.crf
+*.TMP
+*.bak
+*.html
+/Listings/
+/.vscode/
+/DebugConfig/
+/prj/
+/User/CConsole.*
+/recalling.txt
+/canDaata.txt
