@@ -11,6 +11,7 @@
 //2016/10/24 chenxx: fix pointer datatype bug in [uint16_t elemsInQue() const]
 //2016/10/30 chenxx: add function empty() clear() capacity() need test.
 //2016/11/04 chenxx: delete back(); add back_ptr(), front_ptr(); delete size()
+//2017/01/14 chenxx: add call_back_push. Fix bug at align_que2array().
 #ifndef RINGQUE_H
 #define RINGQUE_H
 #include <stdint.h>
@@ -37,11 +38,11 @@ public:
 		memset(static_array_, 0, MEM_LEN_);
 	}
 	
-	uint16_t capacity(){return (MEM_LEN_ - 1);}//TODO: test
+	uint16_t capacity(){return (MEM_LEN_ - 1);}
+
+	bool empty(){return (back_ptr_ == front_ptr_);}
 	
-	bool empty(){return (back_ptr_ == front_ptr_);}//TODO: test
-	
-	void clear(){back_ptr_ = front_ptr_;} //TODO: test
+	void clear(){back_ptr_ = front_ptr_;}
 
 	T& front() {return *front_ptr_;}
 
@@ -52,7 +53,10 @@ public:
 */
 	T* front_ptr()
 	{
-		align_que2array();
+		if (front_ptr_ > back_ptr_)
+		{
+			align_que2array();
+		}
 		return front_ptr_;
 	}
 
@@ -63,6 +67,9 @@ public:
 */
 	T* back_ptr()
 	{
+		if(static_array_ == front_ptr_ || front_ptr_ > back_ptr_)
+			return back_ptr_;
+		
 		align_que2array();
 		return back_ptr_;
 	}
@@ -198,10 +205,19 @@ public:
 		return len;
 	}
 	
+	uint16_t call_back_push(uint16_t(*callback_fun)(void*, T*, uint16_t), void* obj, uint16_t len )
+	{
+		uint16_t free_size = emptyElemsInQue();
+		len = len < free_size ? len : free_size;
+		if(len == 0) return 0;
+		len = callback_fun(obj, back_ptr(), len);
+		back_ptr_ += len;
+		return len;
+	}
 	private:
 
 /**
-* @brief  return the front ptr of the queue
+* @brief  align the front pointer with the pointer of static array
 * @param  None
 * @retval None
 */
@@ -210,14 +226,25 @@ public:
 		uint16_t elems_inQue = elemsInQue();
 
 		/* check if queue is empty before pop front */
-		if (elems_inQue == 0) return ;
+		if (elems_inQue == 0) 
+		{
+			front_ptr_ = back_ptr_ = static_array_;
+			return ;
+		}
+		
 		/* check if queue is already aligned */
 		if (static_array_ == front_ptr_) return;
 
-		reverse(static_array_, front_ptr_-1);
-		reverse(front_ptr_, static_array_+MEM_LEN_);
-		reverse(static_array_, static_array_+MEM_LEN_);
-
+		if(front_ptr_ > back_ptr_)
+		{
+			reverse(static_array_, front_ptr_ - 1);
+			reverse(front_ptr_, static_array_ + MEM_LEN_ - 1);
+			reverse(static_array_, static_array_ + MEM_LEN_ - 1);
+		}else //front_ptr < back_ptr
+		{
+			memmove(static_array_, front_ptr_, elems_inQue);
+		}
+		
 		front_ptr_ = static_array_;
 		back_ptr_ = static_array_ + elems_inQue;
 	}
@@ -248,7 +275,6 @@ public:
 		}
 	}
 		const uint16_t MEM_LEN_;
-	
 		T* const static_array_;
 		T* back_ptr_; //[front, back)
 		T* front_ptr_;

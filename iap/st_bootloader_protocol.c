@@ -20,10 +20,13 @@
 #include "iap.h"
 #include "printf.h"
 #include "stmflash.h"
+#include "Timer.h"
 
 static uint8_t bl_is_read_protected();
 static uint8_t xor_check_sum(uint8_t* start_addr, uint16_t size);
 uint8_t long_data_buffer[300];
+extern uint8_t FIRMWARE_VERSION;
+static uint8_t exe_tick = 0;
 
 /**
   * @brief  Gets the version and the allowed commands 
@@ -44,6 +47,10 @@ bl_err_t bl_get()
   */
 bl_err_t bl_get_version_rps()
 {
+	const uint8_t MSG_SIZE = 5;
+	uint8_t msg_buf[MSG_SIZE] = {ACK, FIRMWARE_VERSION, 0x00, 0x00, ACK};
+
+	iap_device.write((uint8_t*)msg_buf, MSG_SIZE);
 	return BL_OK;
 }
 
@@ -64,13 +71,100 @@ bl_err_t bl_get_id()
 	
 /**
   * @brief  Reads up to 256 bytes of memory starting from an
-	*					address specified by the application
+	*					address specified by the application. Ref - AN3155 3.4
 	* @param  None
   * @retval None
   */
 bl_err_t bl_read_memory()
 {
-	return BL_OK;
+	static uint32_t start_addr = 0;
+	static int16_t pack_length = 0;
+	switch(exe_tick)
+	{
+		case 0:
+		{
+			if(bl_is_read_protected())
+			{
+				iapdev_write_byte(NACK);
+				break;//Error, protected
+			}
+			iapdev_write_byte(ACK);
+			//printf("Get \"Read Memory\" command and wait for 32bits address and 1byte checksum.\r\n");
+			exe_tick++;
+			return BL_YIELD;
+		}
+		case 1:
+		{
+			int i;
+			uint8_t sum_check = 0;
+			
+			if(iap_device.data_in_read_buf() < 5) //4bytes address and 1byte checksum
+			{
+				if(iap_device.is_data_flow_break())
+				{
+					printf("timeout and break %s(%d)\r\n",__FUNCTION__, __LINE__);
+					iap_device.clear_read_buf();
+					exe_tick = 0;
+					return BL_ERR;
+				}
+				return BL_YIELD;
+			}
+					
+			for(i = 0; i < 4; i++)
+			{
+				/* MSB is transfered fisrt - ref. AN3155 3.6 */
+				start_addr <<= 8;
+				start_addr += iapdev_read_byte();
+			}
+			
+			sum_check = iapdev_read_byte();			
+			
+			/* XOR != 0 */
+			if(sum_check ^ xor_check_sum((uint8_t*)&start_addr, sizeof(start_addr)))
+			{
+				printf("start_addr = 0x%X, sum_check = 0x%X\r\n", start_addr, sum_check);
+				printf("check sum failed...\r\n");
+				break;//sum check error
+			}
+			iapdev_write_byte(ACK);
+			exe_tick++;
+			return BL_YIELD;
+		}
+		case 2:
+		{
+			if(iap_device.data_in_read_buf() < 2) //4bytes address and 1byte checksum
+			{
+				if(iap_device.is_data_flow_break())
+				{
+					printf("timeout and break %s(%d)\r\n",__FUNCTION__, __LINE__);
+					iap_device.clear_read_buf();
+					exe_tick = 0;
+					return BL_ERR;
+				}
+				return BL_YIELD;
+			}
+			//get pack length
+			pack_length = iapdev_read_byte() + 1;
+			//get pack length xor check
+			if(iapdev_read_byte() != pack_length -1)
+			{
+				printf("pack length check sum failed...\r\n");
+				exe_tick = 0;
+				return BL_ERR;
+			}
+			iapdev_write_byte(ACK);
+			iap_device.write((const uint8_t*)start_addr, pack_length);
+			//send ACK. This is not mentioned in AN3155 3.4
+			iapdev_write_byte(xor_check_sum((uint8_t*)start_addr, pack_length));
+			printf("send %d bytes at address 0x%X\r\n", pack_length, start_addr);
+			exe_tick = 0;
+			return BL_OK;
+		}
+		default:
+			break;
+	}
+	exe_tick = 0;
+	return BL_ERR;
 }
 
 /**
@@ -81,7 +175,7 @@ bl_err_t bl_read_memory()
   */
 bl_err_t bl_go()
 {
-	static uint8_t exe_tick = 0;
+	//static uint8_t exe_tick = 0;
 	uint32_t start_addr = 0;
 	
 	switch(exe_tick)
@@ -102,8 +196,19 @@ bl_err_t bl_go()
 		{
 			int i;
 			uint8_t sum_check = 0;
+			
 			if(iap_device.data_in_read_buf() < 5) //4bytes address and 1byte checksum
+			{
+				if(iap_device.is_data_flow_break())
+				{
+					printf("timeout and break %s(%d)\r\n",__FUNCTION__, __LINE__);
+					iap_device.clear_read_buf();
+					exe_tick = 0;
+					return BL_ERR;
+				}
 				return BL_YIELD;
+			}
+			
 			
 			for(i = 0; i < 4; i++)
 			{
@@ -123,13 +228,8 @@ bl_err_t bl_go()
 			}
 			iapdev_write_byte(ACK);
 			printf("check sum ok...\r\n");	
-			if(BOOT_PARAM_IAP == read_boot_parameter())
-			{
-				write_boot_parameter(BOOT_PARAM_NORM);
-			}
-			printf("Go to application\r\n");	
-			
-			//TODO: wait until NACK is sent
+			printf("Go to address: 0x%X\r\n", start_addr);	
+				
 			while(!is_printf_idel());
 			iap_load_app(start_addr);
 			
@@ -153,7 +253,7 @@ bl_err_t bl_go()
   */
 bl_err_t bl_write_memory()
 {
-	static uint8_t exe_tick = 0;
+	//static uint8_t exe_tick = 0;
 	static uint32_t start_addr = 0;
 	static int16_t pack_length = 0;
 	
@@ -165,11 +265,10 @@ bl_err_t bl_write_memory()
 			{
 				iapdev_write_byte(NACK);
 				printf("Get \"Write Memory\" command but flash protected\r\n");
-				break;
+				exe_tick = 0;
+				return BL_ERR;
 			}
 			iapdev_write_byte(ACK);
-			//printf("Get \"Write Memory\" command\r\n");
-			//printf("wait for 32bits address and 1byte checksum.\r\n");
 			exe_tick++;
 			return BL_YIELD;
 		}
@@ -178,7 +277,18 @@ bl_err_t bl_write_memory()
 			int i;
 			uint8_t sum_check = 0;
 			if(iap_device.data_in_read_buf() < 5) //4bytes address and 1byte checksum
+			{
+				if(iap_device.is_data_flow_break())
+				{
+					printf("timeout and break %s(%d)\r\n",__FUNCTION__, __LINE__);
+					printf("give up %d byte, the first byte is 0x%X\r\n", iap_device.data_in_read_buf(), iapdev_read_byte());
+					iap_device.clear_read_buf();
+					exe_tick = 0;
+					return BL_ERR;
+				}
 				return BL_YIELD;
+			}
+			
 			
 			start_addr = 0;
 			for(i = 0; i < 4; i++)
@@ -196,7 +306,8 @@ bl_err_t bl_write_memory()
 				printf("Error: start_addr = 0x%X, sum_check = 0x%X, result = 0x%X, failed...\r\n",
 					start_addr, sum_check, xor_check_sum((uint8_t*)&start_addr, sizeof(start_addr)));
 				iapdev_write_byte(NACK);
-				break;
+				exe_tick = 0;
+				return BL_ERR;
 			}
 			//printf("wait for pack length\r\n");
 			iapdev_write_byte(ACK);
@@ -215,7 +326,8 @@ bl_err_t bl_write_memory()
 			if(pack_length <= 0 || pack_length > 256 || (pack_length & 0x3) != 0)
 			{
 				printf("pack length = %d, check failed (0 < pl < 256, multiple of 4)\r\n", pack_length);
-				break;
+				exe_tick = 0;
+				return BL_ERR;
 			}
 			//printf("wait for long data and sumcheck(packlen XOR longdata)\r\n");
 			exe_tick++;
@@ -225,11 +337,21 @@ bl_err_t bl_write_memory()
 		case 3:
 		{
 			uint8_t sum_check = 0;
-			
+
 			//pack_length does not include sum check byte
 			//ref. AN3155 Rev6 3.6 Figure 12.
 			if(iap_device.data_in_read_buf() < (pack_length + 1))
+			{
+				if(iap_device.is_data_flow_break())
+				{
+					printf("timeout and break %s(%d)\r\n",__FUNCTION__, __LINE__);
+					iap_device.clear_read_buf();
+					exe_tick = 0;
+					return BL_ERR;
+				}
 				return BL_YIELD;
+			}
+			
 			
 			//printf("get long data\r\n");
 			iap_device.read(long_data_buffer, pack_length);
@@ -241,8 +363,10 @@ bl_err_t bl_write_memory()
 			if(sum_check ^ (xor_check_sum(long_data_buffer, pack_length) ^ (pack_length - 1)))
 			{
 				iapdev_write_byte(NACK);
-				printf("long data sum check failed...\r\n");
-				break;
+				printf("%d bytes data sum check failed, should be 0x%X, get 0x%X\r\n",
+					pack_length, (xor_check_sum(long_data_buffer, pack_length) ^ (pack_length - 1)), sum_check);
+				exe_tick = 0;
+				return BL_ERR;
 			}
 			
 			exe_tick = 0;
@@ -251,10 +375,11 @@ bl_err_t bl_write_memory()
 			{
 				printf("write to address = 0x%X failed\r\n", start_addr);
 				iapdev_write_byte(NACK);
-				break;
+				exe_tick = 0;
+				return BL_ERR;
 			}
 
-			printf("write %d bytes to address = 0x%X finished\r\n", pack_length, start_addr);
+			printf("write %d bytes at 0x%X ok.\r\n", pack_length, start_addr);
 			iapdev_write_byte(ACK);
 			return BL_OK;
 		}
@@ -435,6 +560,7 @@ bl_err_t bl_excute_cmd(uint8_t cmd)
 	return BL_ERR;
 	
 }
+
 #include "canIapDevice.h"
 CDevice<uint8_t>& iap_device(iapDevice);
 //end of file

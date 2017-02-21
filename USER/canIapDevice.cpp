@@ -1,12 +1,10 @@
 #include "canIapDevice.h"
-#include "CUartConsole.h"
+#include "Console.h"
 
 const uint8_t RX_MAILBOX_QUE_SIZE  = 5;
 const uint16_t RX_BUFFER_QUE_SIZE = 300;
 CanRxMsg rxMailboxBuf[RX_MAILBOX_QUE_SIZE];
 uint8_t rxQueueBuffer[RX_BUFFER_QUE_SIZE];
-const uint32_t IAP_REMOTE_ID = 0x19205;
-const uint32_t IAP_NATIVE_ID = 0x19205;
 
 /**
   * @brief  Constructor
@@ -21,7 +19,9 @@ CCanIapDevice::CCanIapDevice(CCanRouter& canBaseRouter,
 	:canBaseRouter_(canBaseRouter),
 	rxBufQue_(rxQueueBuffer, RX_BUFFER_QUE_SIZE),
 	rxMailbox_(rxMailboxBuf, RX_MAILBOX_QUE_SIZE),
-	txNodeId_(txNodeId),txNodeIde_(txNodeIde)
+	txNodeId_(txNodeId),txNodeIde_(txNodeIde),
+	data_flow_break_timer_(200, 200),
+	prev_elems_rx_que_(0)
 {
 	if(rxNodeIde == CAN_Id_Standard)
 		rxMailbox_.setStdId(rxNodeId);
@@ -75,12 +75,6 @@ uint32_t CCanIapDevice::write(const uint8_t* databuf, uint32_t len)
 	tempMsg.DLC = endptr - databuf;
 	memcpy(tempMsg.Data, databuf, tempMsg.DLC);
 	canBaseRouter_.putMsg(tempMsg);
-	Console::Instance()->printf("can send: ");
-	for(int i = 0; i < tempMsg.DLC; i++)
-	{
-		Console::Instance()->printf(" 0x%X", tempMsg.Data[i]);
-	}
-	Console::Instance()->printf("\r\n");
 	return len;
 }
 
@@ -92,10 +86,7 @@ uint32_t CCanIapDevice::write(const uint8_t* databuf, uint32_t len)
   */
 uint32_t CCanIapDevice::read(uint8_t* databuf, uint32_t len)
 {
-	uint8_t bytesInBuf = rxBufQue_.elemsInQue();
-	uint32_t ret = (len < bytesInBuf ? len : bytesInBuf);
-	
-	rxBufQue_.pop_array(databuf, ret);
+	uint32_t ret = rxBufQue_.pop_array(databuf, len);
 	return ret;
 }
 
@@ -126,7 +117,7 @@ uint32_t CCanIapDevice::data_in_write_buf()
   */
 uint32_t CCanIapDevice::freesize_in_write_buf()
 {
-	return canBaseRouter_.freeSizeInTxQue();
+	return canBaseRouter_.getTxQueFreeSize();
 }
 
 /**
@@ -142,9 +133,38 @@ void CCanIapDevice::runReceiver()
 		rxMailbox_.getMsg(&tempMsg);
 		rxBufQue_.push_array(tempMsg.Data, tempMsg.DLC);
 	}
+	
+	if(rxBufQue_.elemsInQue() > prev_elems_rx_que_)
+	{
+		data_flow_break_timer_.reset();
+	}
+	prev_elems_rx_que_ = rxBufQue_.elemsInQue();
 }
 
-#define IAP_NATIVE_ID	0x19204
-#define IAP_REMOTE_ID	0x19205
-CCanIapDevice iapDevice(CanRouter250k, IAP_REMOTE_ID, CAN_Id_Extended, IAP_NATIVE_ID, CAN_Id_Extended);
+/**
+  * @brief  clear read buffer
+	* @param  None
+  * @retval None
+  */
+void CCanIapDevice::clear_read_buf()
+{
+	rxBufQue_.clear();
+}
+
+/**
+  * @brief  is data flow break
+	* @param  None
+  * @retval None
+  */
+bool CCanIapDevice::is_data_flow_break()
+{
+	if(rxBufQue_.empty())
+		return false;
+	else
+		return data_flow_break_timer_.isAbsoluteTimeUp();
+}
+
+#define IAP_UPWARD_ID	0x5004
+#define IAP_DOWNWARD_ID	0x5005
+CCanIapDevice iapDevice(CanRouter1, IAP_UPWARD_ID, CAN_Id_Extended, IAP_DOWNWARD_ID, CAN_Id_Extended);
 //end of file

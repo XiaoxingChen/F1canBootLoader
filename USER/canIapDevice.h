@@ -2,6 +2,7 @@
 #define CAN_IAP_DEVICE_H
 #include "device.h"
 #include "CCan.h"
+#include "Timer.h"
 
 class CCanIapDevice
 	:public CDevice<uint8_t>
@@ -21,6 +22,8 @@ class CCanIapDevice
 		virtual uint32_t data_in_write_buf();
 		virtual uint32_t freesize_in_write_buf();
 		virtual uint32_t data_in_read_buf();
+		virtual void clear_read_buf();
+		virtual bool is_data_flow_break();
 	
 		virtual void runTransmitter() {}
 		virtual void runReceiver();
@@ -31,6 +34,8 @@ class CCanIapDevice
 		CCanRxMailbox rxMailbox_;
 		uint32_t txNodeId_;
 		uint8_t txNodeIde_;
+		Timer data_flow_break_timer_;
+		uint16_t prev_elems_rx_que_;
 };
 
 extern CCanIapDevice iapDevice;

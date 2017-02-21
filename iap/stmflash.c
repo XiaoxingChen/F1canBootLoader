@@ -45,7 +45,7 @@ static uint32_t flash_sector_L = 0x00000000;
   */
 uint8_t is_sector_erased(uint8_t sector_idx)
 {
-	uint8_t ret;
+	uint32_t ret;
 	
 	if(sector_idx > 63) return 0x00;
 	else if(sector_idx > 31)
@@ -98,6 +98,7 @@ int STMFLASH_write_bytes(uint32_t appxaddr,uint8_t *buf,uint16_t len)
 {
 	int i;
 	int ret = 0;
+	FLASH_Status flash_ret;
 	// pack_length must be a multiple of 4
 	// pack_length is less than 256
 	// that means it will never write cross sector
@@ -112,8 +113,10 @@ int STMFLASH_write_bytes(uint32_t appxaddr,uint8_t *buf,uint16_t len)
 	if(appxaddr < 0X1FFF0000)			//do not erase OTP sector
 	{
 		//printf("Erasing sector %d\r\n", FLASH_Sector_to_index(STMFLASH_GetFlashSector(appxaddr)));
-		if(erase_sector_once(STMFLASH_GetFlashSector(appxaddr)) != FLASH_COMPLETE)
+		FLASH_ClearFlag( FLASH_FLAG_EOP |  FLASH_FLAG_PGERR);
+		if((flash_ret = erase_sector_once(STMFLASH_GetFlashSector(appxaddr))) != FLASH_COMPLETE)
 		{
+			printf("erase sector failed, error code: %d\r\n", flash_ret);
 			RESET_SECTOR_ERASE_MARK();
 			ret = -1;
 		}
@@ -123,8 +126,9 @@ int STMFLASH_write_bytes(uint32_t appxaddr,uint8_t *buf,uint16_t len)
 	{
 		for(i = 0; i < len; i+= 4)
 		{
-			if(FLASH_ProgramWord(appxaddr + i, *(buf + i)) != FLASH_COMPLETE)
+			if((flash_ret = FLASH_ProgramWord(appxaddr + i, *(uint32_t*)(buf + i))) != FLASH_COMPLETE)
 			{ 
+				printf("flash program failed, error code: %d\r\n", flash_ret);
 				RESET_SECTOR_ERASE_MARK();
 				ret = -1;
 				break;
@@ -137,7 +141,7 @@ int STMFLASH_write_bytes(uint32_t appxaddr,uint8_t *buf,uint16_t len)
 	return ret;
 }
 
-#define BOOT_PARAM_ADDR 0x0800C000
+#define BOOT_PARAM_ADDR 0x08007800
 /**
   * @brief  get boot parameter in special flash address
 	* @param  None

@@ -1,10 +1,9 @@
 #ifndef __PRINTF_H__
 #define __PRINTF_H__
-#include "CUartConsole.h"
-//#include "Console.h"
+#include "Console.h"
 
 #define printf(fmt, args...) Console::Instance()->printf(fmt, ##args)
-#define is_printf_idel()	Console::Instance()->isTransmitterIdel()
+#define is_printf_idel()	Console::Instance()->isIdel()
 
 #endif
 //end of file
