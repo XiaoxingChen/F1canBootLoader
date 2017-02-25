@@ -15,7 +15,7 @@ public:
 	uint16_t msgsInQue() const;
 	CanRxMsg getMsg();
 	void getMsg(CanRxMsg*);
-	void pushMsg(const CanRxMsg&);
+	virtual void pushMsg(const CanRxMsg&);
 	void clear() {rxQue_.clear();}
 	
 	bool attachToRouter(CCanRouter&);

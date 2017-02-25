@@ -28,11 +28,11 @@
 // </e>
 
 // <e>Enable CanConsole
-#define ENABLE_CAN_CONSOLE		0 
+#define ENABLE_CAN_CONSOLE		1 
 // </e>
 
 // <e>Enable RttConsole
-#define ENABLE_RTT_CONSOLE		1 
+#define ENABLE_RTT_CONSOLE		0 
 // </e>
 
 // <e>Enable EthConsole

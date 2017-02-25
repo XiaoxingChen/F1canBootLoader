@@ -62,6 +62,7 @@ uint32_t CCanIapDevice::write(const uint8_t* databuf, uint32_t len)
 	CanTxMsg tempMsg;
 	tempMsg.IDE = txNodeIde_;
 	tempMsg.StdId = tempMsg.ExtId = txNodeId_;
+	tempMsg.RTR = CAN_RTR_Data;
 	tempMsg.DLC = 8;
 	
 	uint8_t* endptr = (uint8_t*)databuf + len; //the byte at endptr should not be used
