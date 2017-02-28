@@ -68,7 +68,7 @@ uint16_t CCanConsole::write(uint8_t* srcBuf, uint16_t srcLen)
 {
 	CanTxMsg tempMsg;
 	tempMsg.IDE = CAN_Id_Extended;
-	tempMsg.ExtId = 0x5003;
+	tempMsg.ExtId = 0x5006;
 	tempMsg.DLC = 8;
 	tempMsg.RTR = CAN_RTR_Data;
 	
