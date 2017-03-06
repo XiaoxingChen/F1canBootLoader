@@ -8,6 +8,8 @@
 /.vscode/
 /DebugConfig/
 /prj/
+!/prj/rename.uvprojx
+!/prj/JLinkSettings.ini
 /User/CConsole.*
 /recalling.txt
 /canDaata.txt
