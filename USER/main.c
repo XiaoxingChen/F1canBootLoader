@@ -25,7 +25,7 @@ int main()
 	BaseTimer::Instance()->initialize();
 	
 	CanRouter1.InitCan();
-	CanRouter1.InitCanGpio(CCanRouter::GROUP_B8);
+	CanRouter1.InitCanGpio(CCanRouter::GROUP_A11);
 	
 	iapDevice.open();
 	BaseTimer::Instance()->delay_ms(50);
