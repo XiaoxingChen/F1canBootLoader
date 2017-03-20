@@ -3,12 +3,12 @@
 
 namespace
 {
-	const uint8_t TX_QUEBUF_SIZE = 20;
+	const uint8_t TX_QUEBUF_SIZE = 35;
 	CanTxMsg router1_txQueBuf[TX_QUEBUF_SIZE];
-	CanTxMsg router2_txQueBuf[TX_QUEBUF_SIZE];
+//	CanTxMsg router2_txQueBuf[TX_QUEBUF_SIZE];
 };
 CCanRouter CanRouter1(CAN1, router1_txQueBuf, TX_QUEBUF_SIZE, 250000);
-CCanRouter CanRouter2(CAN2, router2_txQueBuf, TX_QUEBUF_SIZE, 250000);
+//CCanRouter CanRouter2(CAN2, router2_txQueBuf, TX_QUEBUF_SIZE, 250000);
 
 /**
   * @brief  Constructor

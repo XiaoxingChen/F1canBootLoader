@@ -21,7 +21,7 @@ void iap_load_app(uint32_t appxaddr)
 		__set_PRIMASK(1);
 		jump2app();									//Ìø×ªµ½APP.
 	}
-	printf("stack top address illegal...\r\n");
+	printf("stack top address: 0x%X illegal...\r\n", (*(volatile uint32_t*)appxaddr));
 }		 
 
 /**

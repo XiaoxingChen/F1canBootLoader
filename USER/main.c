@@ -1,3 +1,6 @@
+//release information: 
+//V1.1: open interrupt at CommonConfig(), extended TX buffer size for iapDevice.
+//			bootloader before version V1.1 do not support code read back
 #include "stm32f10x.h"
 #include "Console.h"
 #include "CommonConfig.h"
@@ -7,7 +10,7 @@
 #include "Timer.h"
 #include "stmflash.h"
 CanTxMsg tempMsg;
-extern const uint8_t FIRMWARE_VERSION = 0x10;
+extern const uint8_t FIRMWARE_VERSION = 0x11;
 uint8_t test_buf[10] = {0,0,0,0,0,0,0,0,0,0};
 // <<< Use Configuration Wizard in Context Menu >>>
 // <e> RUN_IN_APP
@@ -19,7 +22,7 @@ int main()
 #if RUN_IN_APP
 	SCB->VTOR = FLASH_APP1_ADDR;
 #else
-	SCB->VTOR = 0x08000000;
+	SCB->VTOR = STM32_FLASH_BASE;
 #endif
 	CommonConfig();
 	BaseTimer::Instance()->initialize();
