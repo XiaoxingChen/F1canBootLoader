@@ -27,7 +27,7 @@ public:
 	void putc(const char c);
 	void puts(const char* s);
 	enum{
-		TXBUF_SIZE = 256,
+		TXBUF_SIZE = 512,
 	};
 	void postErr();
 	void runTransmitter();

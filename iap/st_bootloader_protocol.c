@@ -202,7 +202,10 @@ bl_err_t bl_go()
 				if(iap_device.is_data_flow_break())
 				{
 					printf("timeout and break %s(%d)\r\n",__FUNCTION__, __LINE__);
-					iap_device.clear_read_buf();
+					printf("give up data:");
+					while(iap_device.data_in_read_buf() > 0)
+						printf("0x%02X ", iapdev_read_byte());
+					printf("\r\n");
 					exe_tick = 0;
 					return BL_ERR;
 				}

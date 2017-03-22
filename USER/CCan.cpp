@@ -3,7 +3,7 @@
 
 namespace
 {
-	const uint8_t TX_QUEBUF_SIZE = 35;
+	const uint8_t TX_QUEBUF_SIZE = 64;
 	CanTxMsg router1_txQueBuf[TX_QUEBUF_SIZE];
 //	CanTxMsg router2_txQueBuf[TX_QUEBUF_SIZE];
 };
