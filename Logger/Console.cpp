@@ -206,6 +206,7 @@ void CConsole::runTransmitter()
 		if(ConsoleDevTab_[i] != NULL)
 		{
 			ConsoleDevTab_[i]->write(tempBuff, copyLen);
+			ConsoleDevTab_[i]->runTransmitter();
 		}
 	}
 }
