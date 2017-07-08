@@ -9,7 +9,7 @@
 #ifndef ST_BOOTLOADER_PROTOCOL_H
 #define ST_BOOTLOADER_PROTOCOL_H
 #include <stdint.h>
-#include "device.h"
+#include "chardev.h"
 
 enum bl_err_t
 {
@@ -24,7 +24,7 @@ enum bl_err_t
 bl_err_t bl_excute_cmd(uint8_t cmd);
 bl_err_t iapdev_write_byte(uint8_t value);
 int iapdev_read_byte();
-extern CDevice<uint8_t>& iap_device;
+extern CCharDev& iap_device;
 
 #endif
 //end of file

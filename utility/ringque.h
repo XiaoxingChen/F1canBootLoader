@@ -12,23 +12,27 @@
 //2016/10/30 chenxx: add function empty() clear() capacity() need test.
 //2016/11/04 chenxx: delete back(); add back_ptr(), front_ptr(); delete size()
 //2017/01/14 chenxx: add call_back_push. Fix bug at align_que2array().
+//2017/06/04 chenxx: add fixed member array. Expressions as follow are allowed:
+//										ringque<char> buff(&array, 10);
+//										ringque<char, 10> buff;
+
 #ifndef RINGQUE_H
 #define RINGQUE_H
 #include <stdint.h>
 #include <string.h>
 template <typename T>
-class ringque
+class ringque_base
 {
 
 public:
 
 /**
-* @brief  	Constructor
-* @array:	static array for queue
-* @size: 	size of static array
-* @retval 	invalid
-*/
-	ringque(T* array, uint16_t size):
+	* @brief  	Constructor
+	* @array:	static array for queue
+	* @size: 	size of static array
+	* @retval 	invalid
+	*/
+	ringque_base(T* array, uint16_t size):
 		MEM_LEN_(size),
 		static_array_(array),
 		back_ptr_(static_array_),
@@ -280,5 +284,37 @@ public:
 		T* front_ptr_;
 };
 
+template <typename T, uint16_t N = 0>
+class ringque : public ringque_base<T>
+{
+public:
+	
+/**
+	* @brief  	Constructor
+	* @array:	static array for queue
+	* @size: 	size of static array
+	* @retval 	invalid
+	*/
+	ringque(T* array, uint16_t size):
+		ringque_base<T>(array, size)
+	{
+	
+	}
+	
+/**
+	* @brief  	Constructor
+	* @array:	static array for queue
+	* @size: 	size of static array
+	* @retval 	invalid
+	*/
+	ringque():
+		ringque_base<T>(array_, N)
+	{
+		if(N == 0) while(1);
+	}
+	
+private:
+	T array_[N == 0 ? 1 : N];
+};
 #endif
 //end of file

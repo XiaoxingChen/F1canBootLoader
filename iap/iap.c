@@ -41,7 +41,7 @@ void iap_run()
 			
 			if(iap_device.data_in_read_buf() < 2)
 			{
-					if(iap_device.is_data_flow_break())
+					if(iap_device.is_dataflow_break())
 					{
 						printf("timeout and break %s(%d), ",__FUNCTION__, __LINE__);
 						printf("give up byte: 0x%X in rxbuf\r\n", iapdev_read_byte());

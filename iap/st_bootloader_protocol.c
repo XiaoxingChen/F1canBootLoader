@@ -16,11 +16,9 @@
 *	(C) COPYRIGHT 2016 Seer Robotics
 ********************************************************************************/
 #include "st_bootloader_protocol.h"
-#include "device.h"
 #include "iap.h"
 #include "printf.h"
 #include "stmflash.h"
-#include "Timer.h"
 
 static uint8_t bl_is_read_protected();
 static uint8_t xor_check_sum(uint8_t* start_addr, uint16_t size);
@@ -100,7 +98,7 @@ bl_err_t bl_read_memory()
 			
 			if(iap_device.data_in_read_buf() < 5) //4bytes address and 1byte checksum
 			{
-				if(iap_device.is_data_flow_break())
+				if(iap_device.is_dataflow_break())
 				{
 					printf("timeout and break %s(%d)\r\n",__FUNCTION__, __LINE__);
 					iap_device.clear_read_buf();
@@ -134,7 +132,7 @@ bl_err_t bl_read_memory()
 		{
 			if(iap_device.data_in_read_buf() < 2) //4bytes address and 1byte checksum
 			{
-				if(iap_device.is_data_flow_break())
+				if(iap_device.is_dataflow_break())
 				{
 					printf("timeout and break %s(%d)\r\n",__FUNCTION__, __LINE__);
 					iap_device.clear_read_buf();
@@ -199,7 +197,7 @@ bl_err_t bl_go()
 			
 			if(iap_device.data_in_read_buf() < 5) //4bytes address and 1byte checksum
 			{
-				if(iap_device.is_data_flow_break())
+				if(iap_device.is_dataflow_break())
 				{
 					printf("timeout and break %s(%d)\r\n",__FUNCTION__, __LINE__);
 					printf("give up data:");
@@ -281,7 +279,7 @@ bl_err_t bl_write_memory()
 			uint8_t sum_check = 0;
 			if(iap_device.data_in_read_buf() < 5) //4bytes address and 1byte checksum
 			{
-				if(iap_device.is_data_flow_break())
+				if(iap_device.is_dataflow_break())
 				{
 					printf("timeout and break %s(%d)\r\n",__FUNCTION__, __LINE__);
 					printf("give up %d byte, the first byte is 0x%X\r\n", iap_device.data_in_read_buf(), iapdev_read_byte());
@@ -345,7 +343,7 @@ bl_err_t bl_write_memory()
 			//ref. AN3155 Rev6 3.6 Figure 12.
 			if(iap_device.data_in_read_buf() < (pack_length + 1))
 			{
-				if(iap_device.is_data_flow_break())
+				if(iap_device.is_dataflow_break())
 				{
 					printf("timeout and break %s(%d)\r\n",__FUNCTION__, __LINE__);
 					iap_device.clear_read_buf();
@@ -564,6 +562,4 @@ bl_err_t bl_excute_cmd(uint8_t cmd)
 	
 }
 
-#include "canIapDevice.h"
-CDevice<uint8_t>& iap_device(iapDevice);
 //end of file

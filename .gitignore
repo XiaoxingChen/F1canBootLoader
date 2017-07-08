@@ -13,3 +13,7 @@
 /User/CConsole.*
 /recalling.txt
 /canDaata.txt
+
+/uartBootloaderPrj/
+!/uartBootloaderPrj/rename.uvprojx
+!/uartBootloaderPrj/JLinkSettings.ini
