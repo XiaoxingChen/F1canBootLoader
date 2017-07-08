@@ -7,9 +7,12 @@
 /Listings/
 /.vscode/
 /DebugConfig/
-/prj/
-!/prj/rename.uvprojx
-!/prj/JLinkSettings.ini
+/canBootloaderPrj/
+!/canBootloaderPrj/rename.uvprojx
+!/canBootloaderPrj/JLinkSettings.ini
+!/canBootloaderPrj/USER
+!/canBootloaderPrj/*.py
+
 /User/CConsole.*
 /recalling.txt
 /canDaata.txt
@@ -17,3 +20,4 @@
 /uartBootloaderPrj/
 !/uartBootloaderPrj/rename.uvprojx
 !/uartBootloaderPrj/JLinkSettings.ini
+!/cuartBootloaderPrj/USER

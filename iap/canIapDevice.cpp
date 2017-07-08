@@ -34,7 +34,7 @@ CCanIapDevice::CCanIapDevice(CCanRouter& canBaseRouter,
 * @param  None
 * @retval state
 */
-uint32_t CCanIapDevice::open()
+int CCanIapDevice::open()
 {
 	rxMailbox_.attachToRouter(canBaseRouter_);
 	return 0;
@@ -46,7 +46,7 @@ uint32_t CCanIapDevice::open()
 * @param  None
 * @retval 
 */
-uint32_t CCanIapDevice::close()
+int CCanIapDevice::close()
 {
 	return 0;
 }
@@ -57,7 +57,7 @@ uint32_t CCanIapDevice::close()
 	* @param  len: data length
   * @retval actual send length
   */
-uint32_t CCanIapDevice::write(const uint8_t* databuf, uint32_t len)
+int CCanIapDevice::write(const uint8_t* databuf, uint32_t len)
 {
 	CanTxMsg tempMsg;
 	tempMsg.IDE = txNodeIde_;
@@ -85,7 +85,7 @@ uint32_t CCanIapDevice::write(const uint8_t* databuf, uint32_t len)
 	* @param  len: data length
   * @retval actual read length
   */
-uint32_t CCanIapDevice::read(uint8_t* databuf, uint32_t len)
+int CCanIapDevice::read(uint8_t* databuf, uint32_t len)
 {
 	uint32_t ret = rxBufQue_.pop_array(databuf, len);
 	return ret;
@@ -152,20 +152,8 @@ void CCanIapDevice::clear_read_buf()
 	rxBufQue_.clear();
 }
 
-/**
-  * @brief  is data flow break
-	* @param  None
-  * @retval None
-  */
-bool CCanIapDevice::is_data_flow_break()
-{
-	if(rxBufQue_.empty())
-		return false;
-	else
-		return data_flow_break_timer_.isAbsoluteTimeUp();
-}
-
 #define IAP_UPWARD_ID	0x5004
 #define IAP_DOWNWARD_ID	0x5005
 CCanIapDevice iapDevice(CanRouter1, IAP_UPWARD_ID, CAN_Id_Extended, IAP_DOWNWARD_ID, CAN_Id_Extended);
+CCharDev& iap_device(iapDevice);
 //end of file

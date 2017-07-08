@@ -1,11 +1,11 @@
 #ifndef CAN_IAP_DEVICE_H
 #define CAN_IAP_DEVICE_H
-#include "device.h"
+#include "chardev.h"
 #include "CCan.h"
 #include "Timer.h"
 
 class CCanIapDevice
-	:public CDevice<uint8_t>
+	:public CCharDev
 {
 	public:
 		CCanIapDevice(CCanRouter& canBaseRouter,
@@ -13,17 +13,16 @@ class CCanIapDevice
 									uint8_t txNodeIde, 
 									uint32_t rxNodeId, 
 									uint8_t rxNodeIde);	
-		virtual uint32_t open();
-		virtual uint32_t close();
+		virtual int open();
+		virtual int close();
 	
-		virtual uint32_t write(const uint8_t*, uint32_t);
-		virtual uint32_t read(uint8_t*, uint32_t);
+		virtual int write(const uint8_t*, uint32_t);
+		virtual int read(uint8_t*, uint32_t);
 	
 		virtual uint32_t data_in_write_buf();
 		virtual uint32_t freesize_in_write_buf();
 		virtual uint32_t data_in_read_buf();
 		virtual void clear_read_buf();
-		virtual bool is_data_flow_break();
 	
 		virtual void runTransmitter() {}
 		virtual void runReceiver();

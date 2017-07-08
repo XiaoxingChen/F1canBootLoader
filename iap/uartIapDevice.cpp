@@ -19,6 +19,11 @@ CUartIapDevice::CUartIapDevice(CUsart& refUsart)
 	
 }
 
+/**
+* @brief  open
+* @param  None
+* @retval state
+*/
 int CUartIapDevice::open()
 {
 	refUsart_.InitSciGpio();
@@ -26,21 +31,43 @@ int CUartIapDevice::open()
 	return 0;
 }
 
+/**
+* @brief  close
+* @param  None
+* @retval 
+*/
 int CUartIapDevice::close()
 {
 	return 0;
 }
 
+/**
+  * @brief  write
+	* @param  databuf: the data pointer wants to send
+	* @param  len: data length
+  * @retval actual send length
+  */
 int CUartIapDevice::write(const uint8_t* buf, uint32_t len)
 {
 	return txBufQue_.push_array((uint8_t*)buf, len);
 }
 
+/**
+  * @brief  read
+	* @param  databuf: the data pointer wants to read
+	* @param  len: data length
+  * @retval actual read length
+  */
 int CUartIapDevice::read(uint8_t* buf, uint32_t len)
 {
 	return rxBufQue_.pop_array(buf, len);
 }
-uint32_t gTemp = 0;
+
+/**
+  * @brief  runReceiver
+	* @param  None
+  * @retval None
+  */
 void CUartIapDevice::runReceiver()
 {
 	static Timer recvTimer(1, 1);
@@ -51,7 +78,7 @@ void CUartIapDevice::runReceiver()
 	update_data_break_flag();
 	if(recvTimer.isAbsoluteTimeUp() || refUsart_.get_BytesInRxFifo() > UART_RX_DMA_BUF_LEN/2)
 	{
-		gTemp = refUsart_.read_RxFifo(rxBufQue_);
+		refUsart_.read_RxFifo(rxBufQue_);
 	}
 }
 
@@ -68,22 +95,42 @@ void CUartIapDevice::runTransmitter()
 	}
 }
 
+/**
+  * @brief  data_in_read_buf
+	* @param  None
+  * @retval bytes
+  */
 uint32_t CUartIapDevice::data_in_read_buf()
 {
 	return rxBufQue_.elemsInQue();
 }
 
+/**
+  * @brief  clear read buffer
+	* @param  None
+  * @retval None
+  */
 void CUartIapDevice::clear_read_buf()
 {
 	refUsart_.clear_rxFifo();
 	rxBufQue_.clear();
 }
 
+/**
+  * @brief  data in write buffer
+	* @param  None
+  * @retval number of bytes
+  */
 uint32_t CUartIapDevice::data_in_write_buf()
 {
 	return txBufQue_.elemsInQue();
 }
 
+/**
+  * @brief  data in write buffer
+	* @param  None
+  * @retval number of bytes
+  */
 uint32_t CUartIapDevice::freesize_in_write_buf()
 {
 	return txBufQue_.emptyElemsInQue();
