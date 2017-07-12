@@ -136,4 +136,10 @@ uint32_t CUartIapDevice::freesize_in_write_buf()
 	return txBufQue_.emptyElemsInQue();
 }
 
+bool CUartIapDevice::isTransmitterIdle()
+{ 
+	runTransmitter();
+	return (txBufQue_.elemsInQue() == 0 && iapUsart.TxDMA(iapUsart.getUsartx())->CNDTR == 0);
+}
+
 //end of file

@@ -15,7 +15,8 @@ class CCharDev
 		virtual uint32_t data_in_write_buf() = 0;
 		virtual uint32_t freesize_in_write_buf() = 0;
 		virtual uint32_t data_in_read_buf() = 0;
-		virtual void clear_read_buf(){}
+		virtual void clear_read_buf() = 0;
+		virtual bool isTransmitterIdle() = 0;
 		
 		virtual void runTransmitter() = 0;
 		virtual void runReceiver() = 0;

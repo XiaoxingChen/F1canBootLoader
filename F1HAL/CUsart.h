@@ -27,7 +27,9 @@ public:
 	void InitSciGpio();
 	void InitSci();
 	void setBaudrate(uint32_t);
+
 	uint8_t getRxOverflowCount();
+	USART_TypeDef * getUsartx() const {return USARTx_;}
 	
 	enum IOGroup_Type
 	{

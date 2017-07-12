@@ -8,6 +8,7 @@
 #include "uartIapDevice.h"
 #include "Timer.h"
 #include "stmflash.h"
+#include "powerupOption.h"
 CanTxMsg tempMsg;
 extern const uint8_t FIRMWARE_VERSION = 0x11;
 uint8_t test_buf[10] = {0,0,0,0,0,0,0,0,0,0};
@@ -37,12 +38,12 @@ int main()
 		if(test_buf[0] == 0x7F && test_buf[1] == 0x7F)
 		{
 			Console::Instance()->printf("Get into bootloader by emergency mode.\r\n");
-			write_boot_parameter(BOOT_PARAM_IAP);
-		}else if(BOOT_PARAM_IAP != read_boot_parameter())
+			pvf::write(pvf::VAR_BOOT_OPTI, BOOT_PARAM_BL);
+		}else if(BOOT_PARAM_BL != pvf::read(pvf::VAR_BOOT_OPTI))
 		{
 			iap_load_app(FLASH_APP1_ADDR);
 		}
-	}else if(BOOT_PARAM_IAP != read_boot_parameter())
+	}else if(BOOT_PARAM_BL != pvf::read(pvf::VAR_BOOT_OPTI))
 	{
 		iap_load_app(FLASH_APP1_ADDR);
 	}
@@ -53,13 +54,13 @@ int main()
 	BaseTimer::Instance()->delay_ms(1000);
 	Console::Instance()->printf("\r\n Bootloader flasher start!\r\n");
 #else	
-	if(BOOT_PARAM_IAP == read_boot_parameter())
+	if(BOOT_PARAM_BL == pvf::read(pvf::VAR_BOOT_OPTI))
 	{
 		Console::Instance()->printf("\r\n Bootloader start!\r\n");
 	}else
 	{
 		Console::Instance()->printf("\r\n Boot paramter error: 0x%X, keep at bootloader\r\n",
-			read_boot_parameter());
+			pvf::read(pvf::VAR_BOOT_OPTI));
 	}
 #endif
 	Console::Instance()->printf("Firmware virsion: V%d.%d\r\n", FIRMWARE_VERSION>>4, FIRMWARE_VERSION&0xF);

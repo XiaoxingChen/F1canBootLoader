@@ -49,6 +49,7 @@ bl_err_t bl_get_version_rps()
 	uint8_t msg_buf[MSG_SIZE] = {ACK, FIRMWARE_VERSION, 0x00, 0x00, ACK};
 
 	iap_device.write((uint8_t*)msg_buf, MSG_SIZE);
+	printf("Reply firmware version: 0x%02X\r\n", FIRMWARE_VERSION);
 	return BL_OK;
 }
 
@@ -64,6 +65,7 @@ bl_err_t bl_get_id()
 	uint8_t msg_buf[MSG_SIZE] = {ACK, sizeof(PID) -1 , PID >> 8, PID & 0xFF, ACK};
 
 	iap_device.write((uint8_t*)msg_buf, MSG_SIZE);
+
 	return BL_OK;
 }
 	
@@ -232,6 +234,8 @@ bl_err_t bl_go()
 			printf("Go to address: 0x%X\r\n", start_addr);	
 				
 			while(!is_printf_idel());
+			while(!iap_device.isTransmitterIdle());
+			BaseTimer::Instance()->delay_ms(2);
 			iap_load_app(start_addr);
 			
 			break;//if program goes here, means load app failed.
@@ -346,6 +350,7 @@ bl_err_t bl_write_memory()
 				if(iap_device.is_dataflow_break())
 				{
 					printf("timeout and break %s(%d)\r\n",__FUNCTION__, __LINE__);
+					printf("Give up %d bytes\r\n", iap_device.data_in_read_buf());
 					iap_device.clear_read_buf();
 					exe_tick = 0;
 					return BL_ERR;

@@ -15,7 +15,7 @@ uint32_t STMFLASH_GetFlashSector(u32 addr)
 {
 	uint32_t head_addr = 0;
 	uint8_t sect_idx = 0;
-	if(addr - 0x08000000 + 1> STM32_FLASH_SIZE) return 0;
+	if(addr - 0x08000000 + 1> STM32_FLASH_SIZE) return 0xFFFFFFFF;
 	
 	sect_idx = (addr - 0x08000000)/STM_SECTOR_SIZE;
 	head_addr = 0x08000000 + sect_idx * STM_SECTOR_SIZE;
@@ -64,7 +64,16 @@ void mark_sector_erased(uint8_t sector_idx)
 		flash_sector_H |= (1ul << (sector_idx - 32));
 	else
 		flash_sector_L |= (1ul << sector_idx);
-	
+}
+
+void rst_addr_erase_mark(uint32_t addr)
+{
+	uint8_t sector_idx = FLASH_Sector_to_index(STMFLASH_GetFlashSector(addr));
+	if(sector_idx > 63) return;
+	else if(sector_idx > 31)
+		flash_sector_H &= ~(1ul << (sector_idx - 32));
+	else
+		flash_sector_L &= ~(1ul << sector_idx);
 }
 
 #define RESET_SECTOR_ERASE_MARK() \
@@ -86,6 +95,13 @@ FLASH_Status erase_sector_once(uint32_t FLASH_Sector)
 		mark_sector_erased(idx);
 	}
 	return ret;
+}
+
+int STMFLASH_write_bytes_noerase(uint32_t appxaddr,uint8_t *buf,uint16_t len)
+{
+	uint8_t idx = FLASH_Sector_to_index(STMFLASH_GetFlashSector(appxaddr));
+	mark_sector_erased(idx);
+	return STMFLASH_write_bytes(appxaddr, buf, len);
 }
 
 /**
@@ -140,31 +156,6 @@ int STMFLASH_write_bytes(uint32_t appxaddr,uint8_t *buf,uint16_t len)
 		
 	return ret;
 }
-
-#define BOOT_PARAM_ADDR 0x08007800
-/**
-  * @brief  get boot parameter in special flash address
-	* @param  None
-	* @retval None
-  */
-uint32_t read_boot_parameter()
-{
-	return *((volatile uint32_t*)BOOT_PARAM_ADDR);
-}
-
-/**
-  * @brief  write boot parameter in special flash address
-	* @param  value to write
-	* @retval None
-  */
-int write_boot_parameter(uint32_t value)
-{
-	return STMFLASH_write_bytes(BOOT_PARAM_ADDR, (uint8_t*)&value, sizeof(value));
-}
-
-
-
-
 
 
 

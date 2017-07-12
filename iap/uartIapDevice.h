@@ -19,6 +19,7 @@ class CUartIapDevice
 		virtual uint32_t freesize_in_write_buf();
 		virtual uint32_t data_in_read_buf();
 		virtual void clear_read_buf();
+		virtual bool isTransmitterIdle();
 	
 		virtual void runTransmitter();
 		virtual void runReceiver();
