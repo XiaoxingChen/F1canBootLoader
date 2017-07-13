@@ -1,5 +1,6 @@
 #include "uartIapDevice.h"
 #include "Timer.h"
+#include "printf.h"
 
 namespace
 {
@@ -72,6 +73,13 @@ void CUartIapDevice::runReceiver()
 {
 	static Timer recvTimer(1, 1);
 	
+	if(USART_GetFlagStatus(refUsart_.getUsartx(), USART_FLAG_ORE) == SET)
+	{
+		uint16_t tmp;
+		tmp = refUsart_.getUsartx()->SR;
+		tmp += refUsart_.getUsartx()->DR;
+	}
+	
 	if(refUsart_.get_BytesInRxFifo() == 0)
 		return;
 	
@@ -79,6 +87,7 @@ void CUartIapDevice::runReceiver()
 	if(recvTimer.isAbsoluteTimeUp() || refUsart_.get_BytesInRxFifo() > UART_RX_DMA_BUF_LEN/2)
 	{
 		refUsart_.read_RxFifo(rxBufQue_);
+		printf("getc\r\n");
 	}
 }
 

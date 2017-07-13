@@ -9,7 +9,8 @@
 #include "Timer.h"
 #include "stmflash.h"
 #include "powerupOption.h"
-CanTxMsg tempMsg;
+#include "LED.h"
+
 extern const uint8_t FIRMWARE_VERSION = 0x11;
 uint8_t test_buf[10] = {0,0,0,0,0,0,0,0,0,0};
 // <<< Use Configuration Wizard in Context Menu >>>
@@ -70,6 +71,7 @@ int main()
 		Console::Instance()->runTransmitter();
 		iapDevice.run();
 		iap_run();
+		LED_Run();
 	}
 	//return 0;
 }
