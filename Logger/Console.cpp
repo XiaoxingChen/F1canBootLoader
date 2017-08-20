@@ -15,96 +15,31 @@
 #include <stdio.h>
 #include <string.h>
 
-#ifndef USE_MINI_PRINT
-#	include <stdio.h>
-#else
-#	include "rtt_vsnprintf.h"
-#endif
-
 // <<< Use Configuration Wizard in Context Menu >>>
 
-// <e>Enable UartConsole
-#define ENABLE_UART_CONSOLE		0 
-// </e>
+// <o> Console Interface: <0=>close Console <1=>UART Console <2=>CAN Console <3=> RTT Console
+// <4=> UDP Console 
+// 	<i>Default: 0 
+#define DEFAULT_CONSOLE 3
 
-// <e>Enable CanConsole
-#define ENABLE_CAN_CONSOLE		0 
-// </e>
+// <<< end of configuration section >>
+//#include "CUartConsole.h"
+#include "CCanConsole.h"
+#include "CRttConsole.h"
+//#include "CUdpConsole.h"
 
-// <e>Enable RttConsole
-#define ENABLE_RTT_CONSOLE		1 
-// </e>
-
-// <e>Enable EthConsole
-#define ENABLE_ETH_CONSOLE		0 
-// </e>
-
-// <<< end of configuration section >>>
-
-#if ENABLE_UART_CONSOLE
-	#include "Console.h"
-#endif
-	
-#if ENABLE_CAN_CONSOLE
-	#include "CCanConsole.h"
-#endif
-	
-#if ENABLE_RTT_CONSOLE	
-	#include "CRttConsole.h"
-#endif
-	
-#if ENABLE_ETH_CONSOLE	
-	#include "CEthConsole.h"
-#endif
-
-#if ENABLE_UART_CONSOLE || ENABLE_CAN_CONSOLE || ENABLE_RTT_CONSOLE || ENABLE_ETH_CONSOLE
-#	define CONSOLE_UNSILENT
-#endif
-
-char CConsole::TxBuf_[TXBUF_SIZE];		//buffer for None DMA Mode txQueue_
-char CConsole::vsnprintfBuf_[TXBUF_SIZE];	//for sprintf
-CConsole::COstreamDev* CConsole::ConsoleDevTab_[NUM_OF_DEV];
+ringque<char, CConsole::TXBUF_SIZE> CConsole::txQueue_;
+char CConsole::vsnprintfBuf_[VSPRINT_SIZE];	//for sprintf
 /**
   * @brief  Constructor
 	* @param  None
   * @retval None
   */
 CConsole::CConsole()
-	:txQueue_(TxBuf_, TXBUF_SIZE),
-	overflowCounter_(0)
-{
-#if ENABLE_UART_CONSOLE
-	ConsoleDevTab_[UART_DEV] = new CUartConsole;
-#else 
-	ConsoleDevTab_[UART_DEV] = NULL;
-#endif
-	
-#if ENABLE_CAN_CONSOLE
-	ConsoleDevTab_[CAN_DEV] = new CCanConsole;
-#else
-	ConsoleDevTab_[CAN_DEV] = NULL;
-#endif
-	
-#if ENABLE_RTT_CONSOLE	
-	ConsoleDevTab_[RTT_DEV] = new CRttConsole;
-#else
-	ConsoleDevTab_[RTT_DEV] = NULL;
-#endif
-	
-#if ENABLE_ETH_CONSOLE	
-	ConsoleDevTab_[ETH_DEV] = new CEthConsole;
-#else
-	ConsoleDevTab_[ETH_DEV] = NULL;
-#endif
-	
-	for(int i = 0; i < NUM_OF_DEV; i++)
-	{
-		if(ConsoleDevTab_[i] != NULL)
-		{
-			ConsoleDevTab_[i]->open();
-		}
-	}
-	
+	:overflowCounter_(0),
+	ConsoleDev_(NULL)
+{	
+	initDev((OstreamDevEnum)DEFAULT_CONSOLE);
 }
 
 /**
@@ -136,11 +71,7 @@ int CConsole::printf(const char* fmt, ...)
 	
 	//TODO lock vsnprintf mutex
 	va_start(args, fmt);
-#ifndef USE_MINI_PRINT
 	n = vsnprintf(vsnprintfBuf_, TXBUF_SIZE, fmt, args);
-#else
-	n = SEGGER_RTT_vsnprintf(vsnprintfBuf_, TXBUF_SIZE, fmt, &args);
-#endif
 	va_end(args);
 	if(n > TXBUF_SIZE) n = TXBUF_SIZE;
 	
@@ -182,33 +113,27 @@ void CConsole::puts(const char* s)
   */
 void CConsole::runTransmitter()
 {
+	if(NULL == ConsoleDev_)
+		return;
+	
 	const uint8_t BUFF_SIZE = 32;
 	uint8_t tempBuff[BUFF_SIZE];
-	uint8_t copyLen = txQueue_.elemsInQue();
-	
+	uint16_t copyLen = txQueue_.elemsInQue();
+
 	//find the minium between: txQue.elems, ConsoleDev.freesize, BUFF_SIZE
-	for(int i = 0; i < NUM_OF_DEV; i++)
+	ConsoleDev_->runTransmitter();
+	if(ConsoleDev_->getFreeSize() < copyLen)
 	{
-		if(ConsoleDevTab_[i] != NULL)
-		{
-			ConsoleDevTab_[i]->runTransmitter();
-			if(ConsoleDevTab_[i]->getFreeSize() < copyLen)
-				copyLen = ConsoleDevTab_[i]->getFreeSize();
-		}
+		//blockDevice = i;
+		copyLen = ConsoleDev_->getFreeSize();
 	}
+	
 	if(0 == copyLen) return;
 	if(copyLen > BUFF_SIZE) copyLen = BUFF_SIZE;
 
 	txQueue_.pop_array((char*)tempBuff, copyLen);
 	//write data into dev
-	for(int i = 0; i < NUM_OF_DEV; i++)
-	{
-		if(ConsoleDevTab_[i] != NULL)
-		{
-			ConsoleDevTab_[i]->write(tempBuff, copyLen);
-			ConsoleDevTab_[i]->runTransmitter();
-		}
-	}
+	ConsoleDev_->write(tempBuff, copyLen);
 }
 
 /**
@@ -218,16 +143,74 @@ void CConsole::runTransmitter()
   */
 bool CConsole::isIdel()
 {
-	for(int i = 0; i < NUM_OF_DEV; i++)
+	if(ConsoleDev_ != NULL && !ConsoleDev_->isIdel())
 	{
-		if(ConsoleDevTab_[i] != NULL && !ConsoleDevTab_[i]->isIdel())
-		{
-			//any device busy means Console busy
-			return false;
-		}
+		return false;
 	}
-	//all device idel means Console idel
 	return true;
+}
+
+/**
+  * @brief  setDev
+  * @param  cmd pointer
+	* @param  len: command length
+	* @retval 0: ok
+	* @retval -1: initDev failed
+	* @note   cmd:{devtype, portParam}
+  */
+int CConsole::setDev(uint8_t* cmd, uint16_t len)
+{
+	int dev = *(int*)cmd;
+	int ret = -1;
+	
+	ret = initDev((OstreamDevEnum)dev);
+	return ret;
+//	if(0 != ret || NULL == ConsoleDev_)
+//	{
+//		return ret;
+//	}
+	
+}
+
+/**
+  * @brief  initDev
+  * @param  None
+  * @retval None
+  */
+int CConsole::initDev(OstreamDevEnum dev)
+{
+	delete ConsoleDev_;
+	ConsoleDev_ = NULL;
+	
+	switch(dev)
+	{
+		case UART_DEV:
+		{
+			return -1;
+//			ConsoleDev_ = new CUartConsole;
+			break;
+		}
+		case CAN_DEV:
+		{
+			ConsoleDev_ = new CCanConsole;
+			break;
+		}
+		case RTT_DEV:
+		{
+			ConsoleDev_ = new CRttConsole;
+			break;
+		}
+		case UDP_DEV:
+		{
+			return -1;
+//			ConsoleDev_ = new CUdpConsole;
+			break;
+		}
+		default:
+			return -1;
+	}
+	
+	return ConsoleDev_->open();
 }
 
 //end of file

@@ -403,4 +403,26 @@ bool CCanRouter::attachMailbox(CCanRxMailbox* pMailbox)
 	
 	return true;
 }
+
+bool CCanRouter::isTransmitterIdel()
+{
+	runTransmitter();
+	static uint16_t noAckCounter = 0;
+	if(CAN_ErrorCode_ACKErr == CAN_GetLastErrorCode(CANx_) 
+		|| CAN_ErrorCode_BitRecessiveErr == CAN_GetLastErrorCode(CANx_))
+	{
+		//CAN bus empty, no node reply
+		if(noAckCounter++ > 3000)
+			return true;
+	}
+	else
+	{
+		noAckCounter = 0;
+	}
+	
+	return (0 == getMsgsInTxQue()
+		&& CAN_TxStatus_Ok == CAN_TransmitStatus(CANx_, 0)
+		&& CAN_TxStatus_Ok == CAN_TransmitStatus(CANx_, 1)
+		&& CAN_TxStatus_Ok == CAN_TransmitStatus(CANx_, 2));
+}
 //end of file

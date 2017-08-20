@@ -7,7 +7,7 @@ class CRttConsole
 {
 public:
 	CRttConsole(){}
-	~CRttConsole();
+	virtual ~CRttConsole(){close();}
 
 	virtual uint16_t write(uint8_t* srcBuf, uint16_t srcLen)
 	{

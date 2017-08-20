@@ -20,6 +20,16 @@
 class CConsole
 {
 public:
+	enum OstreamDevEnum
+	{
+		NULL_DEV = 0,
+		UART_DEV,
+		CAN_DEV,
+		RTT_DEV,
+		UDP_DEV,
+		NUM_OF_DEV
+	};
+
 	CConsole();
 	~CConsole();
 	uint16_t send_array(char*, uint16_t);
@@ -28,38 +38,34 @@ public:
 	void puts(const char* s);
 	enum{
 		TXBUF_SIZE = 512,
+		VSPRINT_SIZE = 128
 	};
 	void postErr();
 	void runTransmitter();
 	void run();
 	bool isIdel();
+	int setDev(uint8_t* cmd, uint16_t len);
+	int initDev(OstreamDevEnum dev);
 
 public:
 	class COstreamDev
 	{
 		public:
+			virtual ~COstreamDev(){close();}
 			virtual uint16_t write(uint8_t*, uint16_t) = 0;
+//			virtual uint16_t write(ringque_base<char>& ref_que) = 0;
 			virtual bool open() = 0;
 			virtual bool close() {return true;}
 			virtual void runTransmitter() {}
 			virtual uint16_t getFreeSize() = 0;
 			virtual bool isIdel() = 0;
 	};
-	enum OstreamDevEnum
-	{
-		UART_DEV = 0,
-		CAN_DEV,
-		RTT_DEV,
-		ETH_DEV,
-		NUM_OF_DEV
-	};
 	
 private:
-	static char TxBuf_[TXBUF_SIZE]; //for txQueue_.
-	ringque<char> txQueue_;
-	static char vsnprintfBuf_[TXBUF_SIZE]; //for sprintf
+	static ringque<char, TXBUF_SIZE> txQueue_;
+	static char vsnprintfBuf_[VSPRINT_SIZE]; //for sprintf
 	uint16_t overflowCounter_;
-	static COstreamDev* ConsoleDevTab_[NUM_OF_DEV];
+	COstreamDev* ConsoleDev_;
 };
 
 typedef NormalSingleton<CConsole> Console;

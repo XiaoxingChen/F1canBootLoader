@@ -16,12 +16,12 @@ CCanIapDevice::CCanIapDevice(CCanRouter& canBaseRouter,
 														uint8_t txNodeIde, 
 														uint32_t rxNodeId, 
 														uint8_t rxNodeIde)
-	:canBaseRouter_(canBaseRouter),
+	:CCharDev(300), canBaseRouter_(canBaseRouter),
 	rxBufQue_(rxQueueBuffer, RX_BUFFER_QUE_SIZE),
 	rxMailbox_(rxMailboxBuf, RX_MAILBOX_QUE_SIZE),
-	txNodeId_(txNodeId),txNodeIde_(txNodeIde),
-	data_flow_break_timer_(200, 200),
-	prev_elems_rx_que_(0)
+	txNodeId_(txNodeId),txNodeIde_(txNodeIde)//,
+//	data_flow_break_timer_(200, 200),
+//	prev_elems_rx_que_(0)
 {
 	if(rxNodeIde == CAN_Id_Standard)
 		rxMailbox_.setStdId(rxNodeId);
@@ -92,6 +92,31 @@ int CCanIapDevice::read(uint8_t* databuf, uint32_t len)
 }
 
 /**
+  * @brief  runReceiver
+	* @param  None
+  * @retval None
+  */
+void CCanIapDevice::runReceiver()
+{
+	CanRxMsg tempMsg;
+	if(0 == rxMailbox_.msgsInQue())
+		return;
+	
+	update_data_break_flag();
+	while(rxMailbox_.msgsInQue() > 0)
+	{
+		rxMailbox_.getMsg(&tempMsg);
+		rxBufQue_.push_array(tempMsg.Data, tempMsg.DLC);
+	}
+	
+//	if(rxBufQue_.elemsInQue() > prev_elems_rx_que_)
+//	{
+//		data_flow_break_timer_.reset();
+//	}
+//	prev_elems_rx_que_ = rxBufQue_.elemsInQue();
+}
+
+/**
   * @brief  data_in_read_buf
 	* @param  None
   * @retval bytes
@@ -101,6 +126,16 @@ uint32_t CCanIapDevice::data_in_read_buf()
 	return rxBufQue_.elemsInQue();
 }
 
+
+/**
+  * @brief  clear read buffer
+	* @param  None
+  * @retval None
+  */
+void CCanIapDevice::clear_read_buf()
+{
+	rxBufQue_.clear();
+}
 /**
   * @brief  data in write buffer
 	* @param  None
@@ -121,35 +156,13 @@ uint32_t CCanIapDevice::freesize_in_write_buf()
 	return canBaseRouter_.getTxQueFreeSize();
 }
 
-/**
-  * @brief  runReceiver
-	* @param  None
-  * @retval None
-  */
-void CCanIapDevice::runReceiver()
-{
-	CanRxMsg tempMsg;
-	while(rxMailbox_.msgsInQue() > 0)
-	{
-		rxMailbox_.getMsg(&tempMsg);
-		rxBufQue_.push_array(tempMsg.Data, tempMsg.DLC);
-	}
-	
-	if(rxBufQue_.elemsInQue() > prev_elems_rx_que_)
-	{
-		data_flow_break_timer_.reset();
-	}
-	prev_elems_rx_que_ = rxBufQue_.elemsInQue();
-}
 
-/**
-  * @brief  clear read buffer
-	* @param  None
-  * @retval None
-  */
-void CCanIapDevice::clear_read_buf()
+
+
+
+bool CCanIapDevice::isTransmitterIdle()
 {
-	rxBufQue_.clear();
+	return canBaseRouter_.isTransmitterIdel();
 }
 
 #define IAP_UPWARD_ID	0x5004

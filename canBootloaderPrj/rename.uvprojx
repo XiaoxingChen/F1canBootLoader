@@ -136,7 +136,7 @@
             <DriverSelection>4099</DriverSelection>
           </Flash1>
           <bUseTDR>1</bUseTDR>
-          <Flash2>Segger\JL2CM3.dll</Flash2>
+          <Flash2>BIN\UL2CM3.DLL</Flash2>
           <Flash3></Flash3>
           <Flash4></Flash4>
           <pFcarmOut></pFcarmOut>
@@ -394,6 +394,11 @@
               <FileType>8</FileType>
               <FilePath>.\USER\main.cpp</FilePath>
             </File>
+            <File>
+              <FileName>powerupOption.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\USER\powerupOption.cpp</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -475,11 +480,6 @@
               <FilePath>..\iap\st_bootloader_protocol.c</FilePath>
             </File>
             <File>
-              <FileName>stmflash.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\iap\stmflash.c</FilePath>
-            </File>
-            <File>
               <FileName>canIapDevice.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\iap\canIapDevice.cpp</FilePath>
@@ -523,6 +523,11 @@
               <FileName>Timer.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\F1HAL\Timer.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>stmflash.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\F1HAL\stmflash.c</FilePath>
             </File>
           </Files>
         </Group>

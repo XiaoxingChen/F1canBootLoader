@@ -47,7 +47,7 @@ class CCanConsole
 {
 public:
 	CCanConsole();
-	~CCanConsole();
+	virtual ~CCanConsole(){close();};
 
 	virtual uint16_t write(uint8_t*, uint16_t);
 	virtual bool open();
