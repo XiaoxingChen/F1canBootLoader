@@ -10,6 +10,7 @@
 #include "Timer.h"
 #include "stmflash.h"
 #include "powerupOption.h"
+#include "HeartLed.h"
 CanTxMsg tempMsg;
 extern const uint8_t FIRMWARE_VERSION = 0x11;
 uint8_t test_buf[10] = {0,0,0,0,0,0,0,0,0,0};
@@ -69,13 +70,15 @@ int main()
 	}
 #endif
 	Console::Instance()->printf("Firmware virsion: V%d.%d\r\n", FIRMWARE_VERSION>>4, FIRMWARE_VERSION&0xF);
-	//InitWatchDog(500);
+	Initial_HeartLED();
+//	InitWatchDog(5000);
 	while(1)
 	{
 		CanRouter1.runTransmitter();
 		CanRouter1.runReceiver();
 		Console::Instance()->runTransmitter();
 		iapDevice.run();
+		HeartLed_Run();
 		iap_run();
 	}
 	//return 0;

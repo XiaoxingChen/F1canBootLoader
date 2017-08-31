@@ -399,6 +399,11 @@
               <FileType>8</FileType>
               <FilePath>.\USER\powerupOption.cpp</FilePath>
             </File>
+            <File>
+              <FileName>HeartLed.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\USER\HeartLed.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
