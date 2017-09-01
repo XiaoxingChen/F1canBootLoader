@@ -87,7 +87,7 @@ void CUartIapDevice::runReceiver()
 	if(recvTimer.isAbsoluteTimeUp() || refUsart_.get_BytesInRxFifo() > UART_RX_DMA_BUF_LEN/2)
 	{
 		refUsart_.read_RxFifo(rxBufQue_);
-		printf("getc\r\n");
+
 	}
 }
 

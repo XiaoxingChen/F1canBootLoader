@@ -14,7 +14,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
-
+#include "ConsoleConfig.h"
 // <<< Use Configuration Wizard in Context Menu >>>
 
 // <o> Console Interface: <0=>close Console <1=>UART Console <2=>CAN Console <3=> RTT Console
@@ -23,10 +23,22 @@
 #define DEFAULT_CONSOLE 3
 
 // <<< end of configuration section >>
-//#include "CUartConsole.h"
-#include "CCanConsole.h"
-#include "CRttConsole.h"
-//#include "CUdpConsole.h"
+
+#ifdef ENABLE_UART_CONSOLE
+#	include "CUartConsole.h"
+#endif
+
+#ifdef ENABLE_UDP_CONSOLE
+#	include "CUdpConsole.h"
+#endif
+
+#ifdef ENABLE_CAN_CONSOLE
+#	include "CCanConsole.h"
+#endif
+
+#ifdef ENABLE_RTT_CONSOLE
+#	include "CRttConsole.h"
+#endif
 
 ringque<char, CConsole::TXBUF_SIZE> CConsole::txQueue_;
 char CConsole::vsnprintfBuf_[VSPRINT_SIZE];	//for sprintf
@@ -184,28 +196,34 @@ int CConsole::initDev(OstreamDevEnum dev)
 	
 	switch(dev)
 	{
+#		ifdef ENABLE_UART_CONSOLE
 		case UART_DEV:
 		{
-			return -1;
-//			ConsoleDev_ = new CUartConsole;
+			ConsoleDev_ = new CUartConsole;
 			break;
 		}
+#		endif
+#		ifdef ENABLE_CAN_CONSOLE		
 		case CAN_DEV:
 		{
 			ConsoleDev_ = new CCanConsole;
 			break;
 		}
+#		endif
+#		ifdef ENABLE_RTT_CONSOLE	
 		case RTT_DEV:
 		{
 			ConsoleDev_ = new CRttConsole;
 			break;
 		}
+#		endif
+#		ifdef ENABLE_UDP_CONSOLE	
 		case UDP_DEV:
 		{
-			return -1;
-//			ConsoleDev_ = new CUdpConsole;
+			ConsoleDev_ = new CUdpConsole;
 			break;
 		}
+#		endif
 		default:
 			return -1;
 	}

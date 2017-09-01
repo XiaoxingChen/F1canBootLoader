@@ -18,6 +18,9 @@ uint8_t test_buf[10] = {0,0,0,0,0,0,0,0,0,0};
 // 	<i>Default: 0
 #define RUN_IN_APP 0
 // <<< end of configuration section >>>
+
+#define FLASH_APP1_ADDR		0x08005800 
+
 int main()
 {
 #if RUN_IN_APP
