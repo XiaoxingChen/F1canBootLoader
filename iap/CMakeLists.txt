@@ -1,3 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
-aux_source_directory(. DIR_IAP)
+#aux_source_directory(. DIR_IAP)
+set(DIR_IAP iap.c st_bootloader_protocol.c)
 add_library(iap ${DIR_IAP})
+target_link_libraries(iap cmsis)

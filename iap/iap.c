@@ -5,10 +5,10 @@
 
 iapfun jump2app; 
 
-__asm void __set_MSP(uint32_t mainStackPointer)
+void __set_MSP(uint32_t mainStackPointer)
 {
-  msr msp, r0
-  bx lr
+ __asm("msr msp, r0");
+ __asm("bx lr");
 }
 //跳转到应用程序段
 //appxaddr:用户代码起始地址.

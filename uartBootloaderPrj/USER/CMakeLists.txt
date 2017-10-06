@@ -1,4 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 aux_source_directory(. DIR_USER)
+set(DIR_USER ${DIR_USER} ../../iap/uartIapDevice.cpp)
 add_executable(app.elf ${DIR_USER})
+target_link_libraries(app.elf iap logger stddrv cmsis haldrv)
 add_bin_from_elf(app.bin app.elf)

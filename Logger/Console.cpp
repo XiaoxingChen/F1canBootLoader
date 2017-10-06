@@ -97,6 +97,9 @@ int CConsole::printf(const char* fmt, ...)
   * @param  char to send
   * @retval None
   */
+#ifdef putc
+#undef putc
+#endif
 void CConsole::putc(const char c)
 {
 	//TODO add mutex lock here
