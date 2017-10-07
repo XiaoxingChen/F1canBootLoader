@@ -13,6 +13,7 @@ namespace
 
 CUartIapDevice iapDevice(iapUsart);
 CCharDev& iap_device(iapDevice);
+extern "C" void * __dso_handle = 0;
 
 CUartIapDevice::CUartIapDevice(CUsart& refUsart)
 	:CCharDev(300), refUsart_(refUsart)

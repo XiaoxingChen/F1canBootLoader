@@ -4,6 +4,7 @@
 *.TMP
 *.bak
 *.html
+*.a
 /Listings/
 /.vscode/
 /DebugConfig/

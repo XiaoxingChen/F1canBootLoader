@@ -7,6 +7,8 @@ CMAKE_FORCE_C_COMPILER(arm-none-eabi-g++ GNU)
 CMAKE_FORCE_CXX_COMPILER(arm-none-eabi-g++ GNU)
 #CMAKE_ASM_COMPILER(arm-none-eabi-as GNU)
 set(CMAKE_ASM_COMPILER arm-none-eabi-as)
+set(CMAKE_OBJCOPY arm-none-eabi-objcopy)
+set(CMAKE_LINKER arm-none-eabi-ld)
 
 set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
 set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
