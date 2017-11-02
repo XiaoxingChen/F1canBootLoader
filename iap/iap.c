@@ -5,12 +5,23 @@
 
 iapfun jump2app; 
 
-__asm void __set_MSP(uint32_t mainStackPointer)
+//void __set_MSP(uint32_t mainStackPointer)
+//{
+// __asm("msr msp, r0");
+// __asm("bx lr");
+//}
+
+void __set_MSP(uint32_t topOfMainStack) __attribute__( ( naked ) );
+void __set_MSP(uint32_t topOfMainStack)
 {
-  msr msp, r0
-  bx lr
+  __ASM volatile ("MSR msp, %0\n\t"
+                  "BX  lr     \n\t" : : "r" (topOfMainStack) );
 }
-//跳转到应用程序段
+////跳转到应用程序段
+void __set_PRIMASK(uint32_t priMask)
+{
+  __ASM volatile ("MSR primask, %0" : : "r" (priMask) );
+}
 //appxaddr:用户代码起始地址.
 void iap_load_app(uint32_t appxaddr)
 {

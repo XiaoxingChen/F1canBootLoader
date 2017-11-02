@@ -1,7 +1,8 @@
 #include "stm32f10x.h"
 #include "CommonConfig.h"
+#include "core_cm3.h"
 
-void CommonConfig(void)
+void CommonConfig()
 {
 		__set_PRIMASK(0);
     NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2); 

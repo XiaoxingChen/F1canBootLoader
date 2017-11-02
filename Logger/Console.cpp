@@ -12,7 +12,7 @@
 ********************************************************************************/
 #include "Console.h"
 #include <stdarg.h>
-#include <stdio.h>
+//#include <stdio.h>
 #include <string.h>
 #include "ConsoleConfig.h"
 #include "rtt_vsnprintf.h"
@@ -102,6 +102,9 @@ int CConsole::printf(const char* fmt, ...)
   * @param  char to send
   * @retval None
   */
+#ifdef putc
+#undef putc
+#endif
 void CConsole::putc(const char c)
 {
 	//TODO add mutex lock here

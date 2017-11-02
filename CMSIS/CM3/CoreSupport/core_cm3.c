@@ -434,7 +434,6 @@ uint32_t __STREXW(uint32_t value, uint32_t *addr)
 
 #pragma diag_default=Pe940
 
-
 #elif (defined (__GNUC__)) /*------------------ GNU Compiler ---------------------*/
 /* GNU gcc specific functions */
 
