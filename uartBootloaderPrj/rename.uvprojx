@@ -454,6 +454,11 @@
               <FileType>1</FileType>
               <FilePath>..\Libraries\src\stm32f10x_flash.c</FilePath>
             </File>
+            <File>
+              <FileName>stm32f10x_iwdg.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Libraries\src\stm32f10x_iwdg.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

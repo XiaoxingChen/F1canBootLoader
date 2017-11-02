@@ -8,6 +8,10 @@
 #include "stm32f10x.h"
 
 void CommonConfig(void);
+void InitWatchDog(uint16_t);
+	 
+inline void ServiceDog()
+{IWDG_ReloadCounter();}
 	 
 #ifdef __cplusplus
  }
