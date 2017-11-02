@@ -97,6 +97,12 @@ __ASM uint32_t __get_MSP(void)
  * Assign the value mainStackPointer to the MSP 
  * (main stack pointer) Cortex processor register
  */
+//void __set_MSP(uint32_t mainStackPointer)
+//{
+//  __ASM("msr msp, r0");
+//  __ASM("bx lr");
+//}
+
 __ASM void __set_MSP(uint32_t mainStackPointer)
 {
   msr msp, r0
