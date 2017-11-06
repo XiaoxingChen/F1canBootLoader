@@ -20,6 +20,10 @@
 
 
 /prj/
+/uartBootloaderPrj/list/
+/uartBootloaderPrj/out/
+/uartBootloaderPrj/rename.uvguix.zhyaic
+/uartBootloaderPrj/rename.uvoptx
 
 ## CMake.gitignore
 CMakeCache.txt
