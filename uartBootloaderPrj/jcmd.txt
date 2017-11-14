@@ -1,0 +1,5 @@
+Device STM32F103VE
+si SWD
+speed 1000
+connect
+loadbin build/USER/app.bin 0x08000000

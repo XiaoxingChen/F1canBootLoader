@@ -8,9 +8,9 @@ ENDIF(NOT CMAKE_CROSSCOMPILING)
 
 #add_definitions(-DSTM32F1)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -mcpu=cortex-m3 -mthumb -nostartfiles -fno-rtti -fno-exceptions -Os -ffunction-sections -fdata-sections -DUSE_MINI_PRINT")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -mcpu=cortex-m3 -mthumb -nostartfiles -fno-rtti -fno-exceptions -Os -ffunction-sections -fdata-sections -DUSE_MINI_PRINT")
 set(CMAKE_CXX_FLAGS ${CMAKE_C_FLAGS})
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -T ../../stm32_flash.ld -nostartfiles --specs=rdimon.specs -gc-sections --specs=nano.specs")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -T ../../stm32_flash.ld -nostartfiles --specs=rdimon.specs -gc-sections ")
 
 function(add_bin_from_elf bin elf)
     add_custom_target(${bin} ALL ${CMAKE_OBJCOPY} -Obinary ${elf} ${bin} DEPENDS ${elf})
