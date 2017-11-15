@@ -1,0 +1,25 @@
+--cpu Cortex-M3
+".\out\commonconfig.o"
+".\out\stm32f10x_it.o"
+".\out\main.o"
+".\out\powerupoption.o"
+".\out\heartled.o"
+".\out\system_stm32f10x.o"
+".\out\core_cm3.o"
+".\out\misc.o"
+".\out\stm32f10x_gpio.o"
+".\out\stm32f10x_rcc.o"
+".\out\stm32f10x_dma.o"
+".\out\stm32f10x_usart.o"
+".\out\stm32f10x_flash.o"
+".\out\startup_stm32f10x_hd.o"
+".\out\rtt_vsnprintf.o"
+".\out\console.o"
+".\out\segger_rtt.o"
+".\out\cusart.o"
+".\out\timer.o"
+".\out\stmflash.o"
+--library_type=microlib --strict --scatter ".\out\test1.sct"
+--summary_stderr --info summarysizes --map --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list ".\list\test1.map" -o .\out\test1.axf

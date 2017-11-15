@@ -10,7 +10,7 @@ void CommonConfig()
 		GPIO_PinRemapConfig(GPIO_Remap_SWJ_JTAGDisable, ENABLE);
 }
 
-void __set_PRIMASK(uint32_t priMask)
-{
-  __ASM volatile ("MSR primask, %0" : : "r" (priMask) );
-}
+//void __set_PRIMASK(uint32_t priMask)
+//{
+//  __ASM volatile ("MSR primask, %0" : : "r" (priMask) );
+//}
