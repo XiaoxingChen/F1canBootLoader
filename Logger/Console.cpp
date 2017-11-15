@@ -12,9 +12,10 @@
 ********************************************************************************/
 #include "Console.h"
 #include <stdarg.h>
-#include <stdio.h>
+//#include <stdio.h>
 #include <string.h>
 #include "ConsoleConfig.h"
+#include "rtt_vsnprintf.h"
 // <<< Use Configuration Wizard in Context Menu >>>
 
 // <o> Console Interface: <0=>close Console <1=>UART Console <2=>CAN Console <3=> RTT Console
@@ -83,7 +84,11 @@ int CConsole::printf(const char* fmt, ...)
 	
 	//TODO lock vsnprintf mutex
 	va_start(args, fmt);
+#ifndef USE_MINI_PRINT
 	n = vsnprintf(vsnprintfBuf_, TXBUF_SIZE, fmt, args);
+#else
+	n = SEGGER_RTT_vsnprintf(vsnprintfBuf_, TXBUF_SIZE, fmt, &args);
+#endif
 	va_end(args);
 	if(n > TXBUF_SIZE) n = TXBUF_SIZE;
 	
@@ -97,6 +102,9 @@ int CConsole::printf(const char* fmt, ...)
   * @param  char to send
   * @retval None
   */
+#ifdef putc
+#undef putc
+#endif
 void CConsole::putc(const char c)
 {
 	//TODO add mutex lock here
