@@ -23,3 +23,7 @@
 
 /prj/
 /modbusTemplate/
+*.uvguix.*
+*/list/
+*/out/
+JLinkLog.txt
