@@ -380,11 +380,6 @@
           <GroupName>USER</GroupName>
           <Files>
             <File>
-              <FileName>CommonConfig.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\USER\CommonConfig.c</FilePath>
-            </File>
-            <File>
               <FileName>stm32f10x_it.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\USER\stm32f10x_it.c</FilePath>
@@ -395,14 +390,9 @@
               <FilePath>.\USER\main.cpp</FilePath>
             </File>
             <File>
-              <FileName>powerupOption.cpp</FileName>
+              <FileName>powerupDefaultValue.cpp</FileName>
               <FileType>8</FileType>
-              <FilePath>.\USER\powerupOption.cpp</FilePath>
-            </File>
-            <File>
-              <FileName>HeartLed.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\USER\HeartLed.c</FilePath>
+              <FilePath>.\USER\powerupDefaultValue.cpp</FilePath>
             </File>
           </Files>
         </Group>
@@ -458,6 +448,11 @@
               <FileName>stm32f10x_flash.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Libraries\src\stm32f10x_flash.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f10x_iwdg.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Libraries\src\stm32f10x_iwdg.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -533,6 +528,21 @@
               <FileName>stmflash.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\F1HAL\stmflash.c</FilePath>
+            </File>
+            <File>
+              <FileName>powerupOption.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\F1HAL\powerupOption.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>HeartLed.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\F1HAL\HeartLed.c</FilePath>
+            </File>
+            <File>
+              <FileName>CommonConfig.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\F1HAL\CommonConfig.c</FilePath>
             </File>
           </Files>
         </Group>

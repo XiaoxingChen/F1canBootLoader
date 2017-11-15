@@ -2,10 +2,10 @@
 #include "stmflash.h"
 #include "Console.h"
 
-#define POWERUP_VAR_ADDR 0x08007800
 #define MAX_VAR_NUM_FUTURE 256
-static uint32_t* powerupVar = (uint32_t*)POWERUP_VAR_ADDR;
+static uint32_t* powerupVar = (uint32_t*)pvf::POWERUP_VAR_ADDR;
 static uint32_t powerupVarShadow[pvf::VarNum + 1]; //store XOR check at the last DWORD of the array
+extern const uint32_t DEFAULT_POWERUP_VAL[pvf::VarNum];
 
 static uint32_t check_func(uint32_t* startAddr, uint16_t len)
 {
@@ -67,8 +67,11 @@ void pvf::initInApp()
 	}
 	
 	Console::Instance()->printf("Init powerup var field...\r\n");
-	powerupVarShadow[pvf::VAR_BOOT_OPTI] = BOOT_PARAM_APP;
-	powerupVarShadow[pvf::VAR_NUM_OF_VAR] = pvf::VarNum;
+	
+	for(int i = 0; i < pvf::VarNum; i++)
+	{
+		powerupVarShadow[i] = DEFAULT_POWERUP_VAL[i];
+	}
 
 	uint32_t check_res = check_func(powerupVarShadow, pvf::VarNum);
 	STMFLASH_write_bytes((uint32_t)powerupVar, (uint8_t*)powerupVarShadow, pvf::VarNum * 4);

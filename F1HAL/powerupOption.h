@@ -5,13 +5,7 @@
 #include <stdint.h>
 namespace pvf //powerup variables field 
 {
-	enum powerupVarEnum
-	{
-		VAR_BOOT_OPTI = 0,
-		VAR_NUM_OF_VAR,
-		VAR_SECU_KEY,
-		VarNum
-	};
+	#include "powerupDefaultValue.h"
 	
 	bool verifyPowerupField();
 	
