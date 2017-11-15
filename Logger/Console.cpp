@@ -12,32 +12,29 @@
 ********************************************************************************/
 #include "Console.h"
 #include <stdarg.h>
-//#include <stdio.h>
 #include <string.h>
 #include "ConsoleConfig.h"
-#include "rtt_vsnprintf.h"
-// <<< Use Configuration Wizard in Context Menu >>>
 
-// <o> Console Interface: <0=>close Console <1=>UART Console <2=>CAN Console <3=> RTT Console
-// <4=> UDP Console 
-// 	<i>Default: 0 
-#define DEFAULT_CONSOLE 3
 
-// <<< end of configuration section >>
+#if USE_MINI_PRINT
+#	include "rtt_vsnprintf.h"
+#else
+#	include <stdio.h>
+#endif
 
-#ifdef ENABLE_UART_CONSOLE
+#if ENABLE_UART_CONSOLE
 #	include "CUartConsole.h"
 #endif
 
-#ifdef ENABLE_UDP_CONSOLE
+#if ENABLE_UDP_CONSOLE
 #	include "CUdpConsole.h"
 #endif
 
-#ifdef ENABLE_CAN_CONSOLE
+#if ENABLE_CAN_CONSOLE
 #	include "CCanConsole.h"
 #endif
 
-#ifdef ENABLE_RTT_CONSOLE
+#if ENABLE_RTT_CONSOLE
 #	include "CRttConsole.h"
 #endif
 
@@ -84,7 +81,7 @@ int CConsole::printf(const char* fmt, ...)
 	
 	//TODO lock vsnprintf mutex
 	va_start(args, fmt);
-#ifndef USE_MINI_PRINT
+#if !USE_MINI_PRINT
 	n = vsnprintf(vsnprintfBuf_, TXBUF_SIZE, fmt, args);
 #else
 	n = SEGGER_RTT_vsnprintf(vsnprintfBuf_, TXBUF_SIZE, fmt, &args);
@@ -204,28 +201,28 @@ int CConsole::initDev(OstreamDevEnum dev)
 	
 	switch(dev)
 	{
-#		ifdef ENABLE_UART_CONSOLE
+#		if ENABLE_UART_CONSOLE
 		case UART_DEV:
 		{
 			ConsoleDev_ = new CUartConsole;
 			break;
 		}
 #		endif
-#		ifdef ENABLE_CAN_CONSOLE		
+#		if ENABLE_CAN_CONSOLE		
 		case CAN_DEV:
 		{
 			ConsoleDev_ = new CCanConsole;
 			break;
 		}
 #		endif
-#		ifdef ENABLE_RTT_CONSOLE	
+#		if ENABLE_RTT_CONSOLE	
 		case RTT_DEV:
 		{
 			ConsoleDev_ = new CRttConsole;
 			break;
 		}
 #		endif
-#		ifdef ENABLE_UDP_CONSOLE	
+#		if ENABLE_UDP_CONSOLE	
 		case UDP_DEV:
 		{
 			ConsoleDev_ = new CUdpConsole;
