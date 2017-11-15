@@ -39,3 +39,5 @@ CTestTestfile.cmake
 
 /modbusTemplate/rename.uvguix.*
 /modbusTemplate/rename.uvoptx
+
+JLinkLog.txt
