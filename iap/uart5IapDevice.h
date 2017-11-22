@@ -28,7 +28,7 @@ class CUart5IapDevice
 		enum
 		{
 			RX_QUE_LEN = 300,
-			TX_QUE_LEN = 150
+			TX_QUE_LEN = 300
 		};
 			
 	private:
