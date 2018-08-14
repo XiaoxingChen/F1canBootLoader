@@ -23,11 +23,15 @@
 
 // <e> Allow RTT console :
 // </e>
-#define ENABLE_RTT_CONSOLE 1
+#define ENABLE_RTT_CONSOLE 0
+
+// <e> Allow SPI console :
+// </e>
+#define ENABLE_SPI_CONSOLE 1
 
 // <e> Use low weight printf :
 // </e>
-#define USE_MINI_PRINT 1
+#define USE_MINI_PRINT 0
 
 // <<< end of configuration section >>
 

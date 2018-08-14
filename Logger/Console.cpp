@@ -38,6 +38,10 @@
 #	include "CRttConsole.h"
 #endif
 
+#if ENABLE_SPI_CONSOLE
+#	include "CSpiConsole.h"
+#endif
+
 ringque<char, CConsole::TXBUF_SIZE> CConsole::txQueue_;
 char CConsole::vsnprintfBuf_[VSPRINT_SIZE];	//for sprintf
 /**
@@ -131,6 +135,15 @@ void CConsole::puts(const char* s)
 void CConsole::runTransmitter()
 {
 	if(NULL == ConsoleDev_)
+		return;
+	
+	if(!ConsoleDev_->isOpen())
+	{
+		ConsoleDev_->open();
+		return ;
+	}
+
+	if(!ConsoleDev_->isIdel())
 		return;
 	
 	const uint8_t BUFF_SIZE = 32;

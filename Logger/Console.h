@@ -27,6 +27,7 @@ public:
 		CAN_DEV,
 		RTT_DEV,
 		UDP_DEV,
+		SPI_DEV,
 		NUM_OF_DEV
 	};
 
@@ -59,6 +60,7 @@ public:
 			virtual void runTransmitter() {}
 			virtual uint16_t getFreeSize() = 0;
 			virtual bool isIdel() = 0;
+			virtual bool isOpen() { return true; }
 	};
 	
 private:

@@ -21,6 +21,8 @@
 !/uartBootloaderPrj/rename.uvprojx
 !/uartBootloaderPrj/JLinkSettings.ini
 
+/powerLogicPrj/DebugConfig/
+
 /prj/
 /modbusTemplate/
 *.uvguix.*
