@@ -7,7 +7,7 @@
 #define BRD_nEN_PIN				GPIO_Pin_1
 #define BRD_nEN_GPIO			GPIOA
 
-#define PC_EN_PIN					GPIO_Pin_8
+#define PC_EN_PIN					GPIO_Pin_3
 #define PC_EN_GPIO				GPIOA
 
 #define launch_board()		GPIO_SetBits(BRD_nEN_GPIO, BRD_nEN_PIN)
