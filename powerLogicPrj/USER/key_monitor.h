@@ -13,11 +13,8 @@ typedef enum
 enum KEY_ENUM{
 	KEY_IS_PC_LAUNCH = 0,
 	KEY_LAUNCH,
-	KEY_BRAKE,
-	KEY_DCIN,
 	KEY_HY_ON,
 	KEY_HY_OFF,
-	KEY_ON_BRD,
 	TOTAL_KEY_NUM
 };
 

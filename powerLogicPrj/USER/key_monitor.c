@@ -17,13 +17,10 @@ struct key_struct
 
 key_type key_array[TOTAL_KEY_NUM] = 
 {
-	{GPIOA, GPIO_Pin_12, 1, RELEASED, "IS_PC_LAUNCH"}, //KEY_IS_PC_LAUNCH
+	{GPIOA, GPIO_Pin_0, 0, RELEASED, "IS_PC_LAUNCH"}, //KEY_IS_PC_LAUNCH
 	{GPIOA, GPIO_Pin_2, 1, RELEASED, "MODE1_LAUNCH"}, //KEY_LAUNCH
-	{GPIOA, GPIO_Pin_0, 1, RELEASED, "BRAKE"}, //KEY_BRAKE
-	{GPIOA, GPIO_Pin_11, 0, RELEASED, "DCIN"}, //KEY_DCIN
 	{GPIOA, GPIO_Pin_10, 1, RELEASED, "MODE2_ON"}, //KEY_HY_ON
 	{GPIOA, GPIO_Pin_9, 0, RELEASED, "MODE2_OFF"}, //KEY_HY_OFF
-	{GPIOA, GPIO_Pin_3, 0, RELEASED, "MODE0_ON_BRD"}  //KEY_ON_BRD
 }; 
 
 void key_init()
@@ -131,7 +128,7 @@ void key_monitor_run()
 				
 //				timer_set_period(&key_array[i].timer_, 60000);
 //				timer_reset(&key_array[i].timer_);
-				Console::Instance()->printf("[Key]: %s pressed\r\n", key_array[i].name_);
+//				Console::Instance()->printf("[Key]: %s pressed\r\n", key_array[i].name_);
 			}
 			else 
 			{
@@ -164,7 +161,7 @@ void key_monitor_run()
 			else 
 			{
 				key_array[i].key_state_ = RELEASED;
-				Console::Instance()->printf("[Key]: %s released\r\n", key_array[i].name_);
+//				Console::Instance()->printf("[Key]: %s released\r\n", key_array[i].name_);
 			}
 		}
 		

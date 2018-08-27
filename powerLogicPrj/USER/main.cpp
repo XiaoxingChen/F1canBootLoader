@@ -23,24 +23,25 @@ int main()
 {
 	CommonConfig();
 	BaseTimer::Instance()->initialize();
-
+	
 	key_init();
 	logic_pin_config();
-	Console::Instance()->printf("PowerLogic virsion: V%d.%d\r\n", FIRMWARE_VERSION>>4, FIRMWARE_VERSION&0xF);
+	
+	//Console::Instance()->printf("PowerLogic virsion: V%d.%d\r\n", FIRMWARE_VERSION>>4, FIRMWARE_VERSION&0xF);
 	confirm_wake_type();
 	Initial_HeartLED();
 	enable_battery();
 
 //	while(1);
 //	InitWatchDog(5000);
+	Timer testTimer(5000,5000);
 	while(1)
 	{
 		key_monitor_run();
 		power_manager_run();
-		
-		Console::Instance()->runTransmitter();
+		//if(testTimer.isAbsoluteTimeUp()) Console::Instance()->printf("Open With Mode 1");
+		//Console::Instance()->runTransmitter();
 		HeartLed_Run();
-		
 	}
 	//return 0;
 }

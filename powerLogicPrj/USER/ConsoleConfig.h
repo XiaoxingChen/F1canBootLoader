@@ -3,10 +3,10 @@
 
 // <<< Use Configuration Wizard in Context Menu >>>
 
-// <o> Default console interface: <0=>close Console <1=>UART Console <2=>CAN Console <3=> RTT Console
+// <o> Default console interface: <0=>close Console <1=>UART Console <2=>CAN Console <3=> RTT Console <5=> SPI Console
 // <4=> UDP Console 
 // 	<i>Default: 0 
-#define DEFAULT_CONSOLE 3
+#define DEFAULT_CONSOLE 5
 
 
 // <e> Allow UART console :

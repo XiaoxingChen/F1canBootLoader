@@ -35,28 +35,16 @@ enum BRD_STATE_TYPE
   */
 int confirm_wake_type()
 {
-    if(PRESSED == key_get_raw_data(KEY_DCIN))
-    {
-			virtual_shutdown_key = KEY_ON_BRD;
-			virtual_launch_key = KEY_ON_BRD;
-			if(PRESSED == key_get_raw_data(KEY_ON_BRD))
-			{
-				Console::Instance()->printf("Wakeup by mode_0\r\n");
-				return 1;
-			}
-			else
-				return 0;
-    }
-		else if(PRESSED == key_get_raw_data(KEY_LAUNCH))
+		if(PRESSED == key_get_raw_data(KEY_LAUNCH))
     {
 			virtual_shutdown_key = KEY_LAUNCH;
 			virtual_launch_key = KEY_LAUNCH;
-			Console::Instance()->printf("Wakeup by mode_1\r\n");
+			//Console::Instance()->printf("Wakeup by mode_1\r\n");
 			return 1;
     }
 		else if(PRESSED == key_get_raw_data(KEY_HY_ON))
     {
-			Console::Instance()->printf("Wakeup by mode_2\r\n");
+			//Console::Instance()->printf("Wakeup by mode_2\r\n");
 			virtual_shutdown_key = KEY_HY_OFF;
 			virtual_launch_key = KEY_HY_ON;
 			return 1;
@@ -86,7 +74,7 @@ void power_manager_run()
 		{
 			if(1 == confirm_wake_type())
 			{
-				Console::Instance()->printf("[Mode]: Enter LAUNCH_PRESSING\r\n");
+				//Console::Instance()->printf("[Mode]: Enter LAUNCH_PRESSING\r\n");
 				launch_board();
 				enable_battery();
 				
@@ -104,7 +92,7 @@ void power_manager_run()
 		{
 			if(RELEASED == key_get_data(virtual_launch_key))
 			{
-				Console::Instance()->printf("[Mode]: Enter WORKING\r\n");
+				//Console::Instance()->printf("[Mode]: Enter WORKING\r\n");
 				/* forwarding virtual shutdown key to PC */
 				pc_en_line_high();
 
@@ -117,7 +105,7 @@ void power_manager_run()
 		{
 			if(PRESSED == key_get_data(virtual_shutdown_key))
 			{
-				Console::Instance()->printf("[Mode]: Enter SHUTTING_DOWN\r\n");
+				//Console::Instance()->printf("[Mode]: Enter SHUTTING_DOWN\r\n");
 				/* start shutdown timer */
 //				timer_set_period(&shutdownTimer, 40000);//40s
 //        timer_reset(&shutdownTimer);
@@ -136,7 +124,7 @@ void power_manager_run()
 				disable_battery();
 				if(RELEASED == key_get_data(virtual_shutdown_key))
 				{
-					Console::Instance()->printf("[Mode]: Enter STANDBY\r\n");
+					//Console::Instance()->printf("[Mode]: Enter STANDBY\r\n");
 					board_state = BS_STANDBY;
 				}
 			}
@@ -158,18 +146,18 @@ void power_manager_run()
 			{
 				if(RELEASED == key_get_data(KEY_IS_PC_LAUNCH))
 				{
-					Console::Instance()->printf("Shutdown from PC\r\n");
+					//Console::Instance()->printf("Shutdown from PC\r\n");
 				}
 				else
 				{
-					Console::Instance()->printf("Force shutdown by timer\r\n");
+					//Console::Instance()->printf("Force shutdown by timer\r\n");
 				}
 				
 				shutdown_board();
 				disable_battery();
 				if(RELEASED == key_get_data(virtual_shutdown_key))
 				{
-					Console::Instance()->printf("[Mode]: Enter STANDBY\r\n");
+					//Console::Instance()->printf("[Mode]: Enter STANDBY\r\n");
 					board_state = BS_STANDBY;
 				}
 			}

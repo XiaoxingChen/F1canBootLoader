@@ -22,7 +22,7 @@ bool pvf::verifyPowerupField()
 	uint32_t actualVarNum = read(VAR_NUM_OF_VAR);
 	if(actualVarNum > MAX_VAR_NUM_FUTURE)//may be 0xFFFFFFFF
 	{
-		Console::Instance()->printf("Invalid actual VarNum: 0x%08X\r\n", actualVarNum);
+//		Console::Instance()->printf("Invalid actual VarNum: 0x%08X\r\n", actualVarNum);
 		return false;
 	}
 
@@ -39,7 +39,7 @@ void pvf::write(powerupVarEnum idx, uint32_t val)
 	uint32_t suitVarNum = getSuitVarNum();
 	if(idx >= suitVarNum)
 	{
-		Console::Instance()->printf("powerupVar index exceed limited...\r\n");
+//		Console::Instance()->printf("powerupVar index exceed limited...\r\n");
 		return;
 	}
 	
@@ -62,11 +62,11 @@ void pvf::initInApp()
 	//powerup field verify failed.
 	if(true == verifyPowerupField())
 	{
-		Console::Instance()->printf("PVF verify passed\r\n");
+//		Console::Instance()->printf("PVF verify passed\r\n");
 		return ;
 	}
 	
-	Console::Instance()->printf("Init powerup var field...\r\n");
+//	Console::Instance()->printf("Init powerup var field...\r\n");
 	
 	for(int i = 0; i < pvf::VarNum; i++)
 	{
@@ -82,19 +82,19 @@ void pvf::initInApp()
 void pvf::printField()
 {
 	uint32_t suitVarNum = getSuitVarNum();
-	Console::Instance()->printf("========== Powerup Field ==========\r\n");
+//	Console::Instance()->printf("========== Powerup Field ==========\r\n");
 	for(int i = 0; i < suitVarNum; i++)
 	{
-		Console::Instance()->printf("Var[%d] = 0x%08X\r\n", i, read((powerupVarEnum)i));
+//		Console::Instance()->printf("Var[%d] = 0x%08X\r\n", i, read((powerupVarEnum)i));
 	}
 
 	if(true == verifyPowerupField())
 	{
-		Console::Instance()->printf("Verify passed...\r\n");
+//		Console::Instance()->printf("Verify passed...\r\n");
 	}
 	else
 	{
-		Console::Instance()->printf("Verify failed...\r\n");
+//		Console::Instance()->printf("Verify failed...\r\n");
 	}
 }
 
@@ -104,11 +104,11 @@ uint32_t pvf::getSuitVarNum()
 	
 	if(actualVarNum > MAX_VAR_NUM_FUTURE)//may be 0xFFFFFFFF
 	{
-		Console::Instance()->printf("Invalid actual VarNum: %d. Use Enum VarNum\r\n", actualVarNum);
+//		Console::Instance()->printf("Invalid actual VarNum: %d. Use Enum VarNum\r\n", actualVarNum);
 			return VarNum;
 	}else if(actualVarNum != VarNum)
 	{
-		Console::Instance()->printf("actual VarNum = %d, Enum VarNum = %d, mismatch. Use actual.\r\n", actualVarNum, VarNum);
+//		Console::Instance()->printf("actual VarNum = %d, Enum VarNum = %d, mismatch. Use actual.\r\n", actualVarNum, VarNum);
 	}
 	return actualVarNum;
 }

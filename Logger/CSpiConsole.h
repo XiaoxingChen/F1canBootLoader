@@ -43,7 +43,6 @@ private:
 	bool _inited;
 	SPI_TypeDef * _SPI;
 	int _usedSize;
-	uint8_t _txBuf[100];
 };
 
 

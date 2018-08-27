@@ -64,6 +64,9 @@ CConsole::CConsole()
 uint16_t CConsole::send_array(char* buf, uint16_t len)
 {
 	uint16_t res;
+#		if ENABLE_SPI_CONSOLE
+	GPIO_ResetBits(GPIOA, GPIO_Pin_7);
+#		endif
 	//TODO add mutex lock here
 	res = txQueue_.push_array(buf, len);
 	//TODO release mutex lock here
@@ -158,7 +161,14 @@ void CConsole::runTransmitter()
 		copyLen = ConsoleDev_->getFreeSize();
 	}
 	
-	if(0 == copyLen) return;
+	if(0 == copyLen) 
+	{
+#		if ENABLE_SPI_CONSOLE
+		GPIO_SetBits(GPIOA, GPIO_Pin_7);
+#		endif
+		return;
+	}
+
 	if(copyLen > BUFF_SIZE) copyLen = BUFF_SIZE;
 
 	txQueue_.pop_array((char*)tempBuff, copyLen);
@@ -242,6 +252,13 @@ int CConsole::initDev(OstreamDevEnum dev)
 			break;
 		}
 #		endif
+#		if ENABLE_SPI_CONSOLE
+		case SPI_DEV:
+		{
+			ConsoleDev_ = new CSpiConsole;
+			break;
+		}
+#endif
 		default:
 			return -1;
 	}
