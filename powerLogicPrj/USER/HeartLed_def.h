@@ -1,6 +1,6 @@
 
 #define HEART_LED_GPIO	GPIOB
-#define HEART_LED_PIN		GPIO_Pin_0
+#define HEART_LED_PIN		GPIO_Pin_3
 
 //#define HEART_LED_GPIO	GPIOA
 //#define HEART_LED_PIN		GPIO_Pin_4
