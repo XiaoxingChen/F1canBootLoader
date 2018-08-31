@@ -17,6 +17,9 @@ LED -->  PA8  	(输出低电平,灯亮;输出高电平灯灭)
 #include "Timer.h"
 #include "printf.h"
 
+#define LED_PORT GPIOA
+#define LED_PIN	 GPIO_Pin_15 
+
 static uint8_t isLedInitialized = 0;
 static Timer ledBlink(50, 50);
 
@@ -30,24 +33,13 @@ void Initial_LED_GPIO(void)
   //使能GPIOA 的时钟,
   RCC_APB2PeriphClockCmd( RCC_APB2Periph_GPIOA | RCC_APB2Periph_GPIOB |RCC_APB2Periph_AFIO, ENABLE);
   //配置PA8 为推挽输出  刷新频率为2Mhz
-  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1 | GPIO_Pin_8;	
+  GPIO_InitStructure.GPIO_Pin = LED_PIN;	
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;       
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
   //应用配置到GPIOA 
-  GPIO_Init(GPIOA, &GPIO_InitStructure);
-  	/*
-	配置 PA0  PA1 为 输入且使能上拉电阻
-	*/
- 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4 | GPIO_Pin_5 | GPIO_Pin_6 ; 
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz; 
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU; 
-	//应用配置　到GPIOA　
-	GPIO_Init(GPIOA, &GPIO_InitStructure);
-
-
+  GPIO_Init(LED_PORT, &GPIO_InitStructure);
   //设置LED 端口输出高电平, 关灯.
-  GPIO_SetBits(GPIOA, GPIO_Pin_8);
-  GPIO_SetBits(GPIOA, GPIO_Pin_1);	 
+  GPIO_SetBits(LED_PORT, LED_PIN);	 
 }
 
 /**************************实现函数********************************************
@@ -76,10 +68,10 @@ void LED_Change(void)
 *******************************************************************************/
 void LED_Reverse(void)
 {
-	if(GPIO_ReadOutputDataBit(GPIOA, GPIO_Pin_8))	
-		GPIO_ResetBits(GPIOA, GPIO_Pin_8);
+	if(GPIO_ReadOutputDataBit(GPIOA, GPIO_Pin_15))	
+		GPIO_ResetBits(LED_PORT, LED_PIN);
 		else
-		GPIO_SetBits(GPIOA, GPIO_Pin_8);
+		GPIO_SetBits(LED_PORT, LED_PIN);
 }
 
 void LED_Run()
