@@ -11,7 +11,7 @@
 #include "powerupOption.h"
 #include "LED.h"
 
-extern const uint8_t FIRMWARE_VERSION = 0x11;
+extern const uint8_t FIRMWARE_VERSION = 0x12;
 uint8_t test_buf[10] = {0,0,0,0,0,0,0,0,0,0};
 // <<< Use Configuration Wizard in Context Menu >>>
 // <e> RUN_IN_APP
@@ -43,12 +43,17 @@ int main()
 		{
 			Console::Instance()->printf("Get into bootloader by emergency mode.\r\n");
 			pvf::write(pvf::VAR_BOOT_OPTI, BOOT_PARAM_BL);
-		}else if(BOOT_PARAM_BL != pvf::read(pvf::VAR_BOOT_OPTI))
+			BaseTimer::Instance()->delay_ms(50);
+			NVIC_SystemReset();
+		}else if(BOOT_PARAM_APP == pvf::read(pvf::VAR_BOOT_OPTI))
 		{
+			Console::Instance()->printf("iapDevice have data but not 7F and param is App, so get into APP.\r\n");
 			iap_load_app(FLASH_APP1_ADDR);
 		}
-	}else if(BOOT_PARAM_BL != pvf::read(pvf::VAR_BOOT_OPTI))
+		
+	}else if(BOOT_PARAM_APP == pvf::read(pvf::VAR_BOOT_OPTI))
 	{
+		Console::Instance()->printf("Get into APP.\r\n");
 		iap_load_app(FLASH_APP1_ADDR);
 	}
 	
@@ -63,8 +68,9 @@ int main()
 		Console::Instance()->printf("\r\n Bootloader start!\r\n");
 	}else
 	{
-		Console::Instance()->printf("\r\n Boot paramter error: 0x%X, keep at bootloader\r\n",
-			pvf::read(pvf::VAR_BOOT_OPTI));
+		Console::Instance()->printf("\r\n Boot paramter error: 0x%X, now write bootparam\r\n", pvf::read(pvf::VAR_BOOT_OPTI));
+		pvf::write(pvf::VAR_BOOT_OPTI, BOOT_PARAM_BL);
+		Console::Instance()->printf("\r\n Boot paramter now: 0x%X\r\n", pvf::read(pvf::VAR_BOOT_OPTI));
 	}
 #endif
 	Console::Instance()->printf("Firmware virsion: V%d.%d\r\n", FIRMWARE_VERSION>>4, FIRMWARE_VERSION&0xF);
