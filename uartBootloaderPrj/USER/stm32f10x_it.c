@@ -23,6 +23,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "Timer.h"
+#include "Console.h"
 #ifdef __cplusplus
  extern "C" {
 #endif 
@@ -62,6 +63,9 @@ void HardFault_Handler(void)
   /* Go to infinite loop when Hard Fault exception occurs */
   while (1)
   {
+	  Console::Instance()->printf("\r\n bootloader hard fault \r\n");
+	  while(!Console::Instance()->isIdel()){}
+	  NVIC_SystemReset();
   }
 }
 
