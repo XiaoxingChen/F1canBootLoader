@@ -5,7 +5,6 @@ void logic_pin_config(void)
 {
 	GPIO_InitTypeDef	GPIO_InitStructure;		
 	
-	
 	RCC_APB2PeriphClockCmd( RCC_APB2Periph_GPIOA<< (((uint32_t)BATT_EN_GPIO-(uint32_t)GPIOA)/0x400), ENABLE);
 	GPIO_InitStructure.GPIO_Pin  = BATT_EN_PIN;		
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;	

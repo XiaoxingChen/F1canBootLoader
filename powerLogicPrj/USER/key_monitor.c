@@ -108,14 +108,10 @@ void key_monitor_run()
 		if(RELEASED == key_array[i].key_state_ 
 			&& PRESSED == key_get_raw_data(i))
 		{
-//			timer_set_period(&key_array[i].timer_, 10);
-//			timer_reset(&key_array[i].timer_);
-			
 			key_array[i].timer_ = Timer(10, 10);
 			key_array[i].timer_.reset();
 			
 			key_array[i].key_state_ = PRESSING;
-//			Console::Instance()->printf("key %d pressing\r\n", i);
 		}
 		
 		/* RELEASED <== PRESSING ==> PRESSED */
@@ -126,9 +122,6 @@ void key_monitor_run()
 			{
 				key_array[i].key_state_ = PRESSED;
 				
-//				timer_set_period(&key_array[i].timer_, 60000);
-//				timer_reset(&key_array[i].timer_);
-//				Console::Instance()->printf("[Key]: %s pressed\r\n", key_array[i].name_);
 			}
 			else 
 			{
@@ -140,14 +133,12 @@ void key_monitor_run()
 		else if(PRESSED == key_array[i].key_state_
 			&& RELEASED == key_get_raw_data(i))
 		{
-//			timer_set_period(&key_array[i].timer_, 10);
-//			timer_reset(&key_array[i].timer_);
 			
 			key_array[i].timer_ = Timer(10, 10);
 			key_array[i].timer_.reset();
 			
 			key_array[i].key_state_ = RELEASING;
-//			Console::Instance()->printf("key %d releasing\r\n", i);
+
 		}
 		
 		/* PRESSED <== RELEASING ==> RELEASED */

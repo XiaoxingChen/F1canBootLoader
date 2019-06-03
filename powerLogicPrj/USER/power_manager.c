@@ -3,6 +3,9 @@
 #include "key_monitor.h"
 #include "logic_out.h"
 #include "Console.h"
+#include "stmflash.h"
+#include "power_state_recoder_manager.h"
+#include "power_state_data.h"
 
 /* either KEY_HY_OFF or KEY_LAUNCH can shutdown the robot */
 static uint8_t virtual_shutdown_key = 0xFF;
@@ -35,30 +38,26 @@ enum BRD_STATE_TYPE
   */
 int confirm_wake_type()
 {
-		if(PRESSED == key_get_raw_data(KEY_LAUNCH))
+	if(PRESSED == key_get_raw_data(KEY_LAUNCH))
     {
-			virtual_shutdown_key = KEY_LAUNCH;
-			virtual_launch_key = KEY_LAUNCH;
-			//Console::Instance()->printf("Wakeup by mode_1\r\n");
-			return 1;
+		virtual_shutdown_key = KEY_LAUNCH;
+		virtual_launch_key = KEY_LAUNCH;
+		//Console::Instance()->printf("Wakeup by mode_1\r\n");
+		return 1;
     }
-		else if(PRESSED == key_get_raw_data(KEY_HY_ON))
+
+	/* when battery key is not used */
+	else
     {
-			//Console::Instance()->printf("Wakeup by mode_2\r\n");
-			virtual_shutdown_key = KEY_HY_OFF;
-			virtual_launch_key = KEY_HY_ON;
-			return 1;
+		virtual_shutdown_key = 0xFF;
+		virtual_launch_key = 0xFF;
+		disable_battery();
+		shutdown_board();
+		return 0;
     }
-		/* when battery key is not used */
-		else
-    {
-			virtual_shutdown_key = 0xFF;
-			virtual_launch_key = 0xFF;
-			disable_battery();
-			shutdown_board();
-			return 0;
-    }
+	
 }
+
 
 /**
   * @brief  run power manager logic
@@ -74,10 +73,10 @@ void power_manager_run()
 		{
 			if(1 == confirm_wake_type())
 			{
-				//Console::Instance()->printf("[Mode]: Enter LAUNCH_PRESSING\r\n");
+				traverseLastPostionAndStateInFlash(BOARD_POWER_STATE_FIRST_ADDRESS, BOARD_POWER_STATE_END_ADDRESS, PSGlobalData::Instance()->board_power_state_address_now, PSGlobalData::Instance()->is_last_board_power_state_error);
+				writeStateInPositionInFlash(PSGlobalData::Instance()->board_power_state_address_now, 1);
 				launch_board();
 				enable_battery();
-				
 				/* forwarding virtual shutdown key to PC */
 				pc_en_line_low();
 				
@@ -92,7 +91,7 @@ void power_manager_run()
 		{
 			if(RELEASED == key_get_data(virtual_launch_key))
 			{
-				//Console::Instance()->printf("[Mode]: Enter WORKING\r\n");
+			
 				/* forwarding virtual shutdown key to PC */
 				pc_en_line_high();
 
@@ -105,10 +104,8 @@ void power_manager_run()
 		{
 			if(PRESSED == key_get_data(virtual_shutdown_key))
 			{
-				//Console::Instance()->printf("[Mode]: Enter SHUTTING_DOWN\r\n");
+				//writeStateInPositionInFlash(PSGlobalData::Instance()->board_power_state_address_now, 0);
 				/* start shutdown timer */
-//				timer_set_period(&shutdownTimer, 40000);//40s
-//        timer_reset(&shutdownTimer);
 				
 				shutdownTimer = Timer(40000, 40000);
 				shutdownTimer.reset();
@@ -118,15 +115,17 @@ void power_manager_run()
 			}
 			
 			/* shutdown from PC desktop */
-			if(RELEASED == key_get_data(KEY_IS_PC_LAUNCH))
+			if((RELEASED == key_get_data(KEY_IS_PC_LAUNCH)))
 			{
+				writeStateInPositionInFlash(PSGlobalData::Instance()->board_power_state_address_now, 0);
+				BaseTimer::Instance()->delay_ms(1000);
 				shutdown_board();
 				disable_battery();
+				BaseTimer::Instance()->delay_ms(200);
 				if(RELEASED == key_get_data(virtual_shutdown_key))
 				{
-					//Console::Instance()->printf("[Mode]: Enter STANDBY\r\n");
 					board_state = BS_STANDBY;
-				}
+				}				
 			}
 			break;
 		}
@@ -135,29 +134,24 @@ void power_manager_run()
 			
 			if(RELEASED == key_get_data(virtual_shutdown_key))
 			{
+				//writeStateInPositionInFlash(board_power_state_address_now, 0);
 				pc_en_line_high();
 			}
 			else if(PRESSED == key_get_data(virtual_shutdown_key))
 			{
+				//writeStateInPositionInFlash(PSGlobalData::Instance()->board_power_state_address_now, 0);
 				pc_en_line_low();
 			}
 			
 			if(shutdownTimer.isAbsoluteTimeUp() || RELEASED == key_get_data(KEY_IS_PC_LAUNCH))
 			{
-				if(RELEASED == key_get_data(KEY_IS_PC_LAUNCH))
-				{
-					//Console::Instance()->printf("Shutdown from PC\r\n");
-				}
-				else
-				{
-					//Console::Instance()->printf("Force shutdown by timer\r\n");
-				}
-				
+				writeStateInPositionInFlash(PSGlobalData::Instance()->board_power_state_address_now, 0);
+				BaseTimer::Instance()->delay_ms(1000);
 				shutdown_board();
 				disable_battery();
+				BaseTimer::Instance()->delay_ms(200);
 				if(RELEASED == key_get_data(virtual_shutdown_key))
 				{
-					//Console::Instance()->printf("[Mode]: Enter STANDBY\r\n");
 					board_state = BS_STANDBY;
 				}
 			}

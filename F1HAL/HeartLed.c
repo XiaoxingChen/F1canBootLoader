@@ -1,5 +1,8 @@
 #include "stm32f10x.h"
 #include "HeartLed_def.h"
+#include "Timer.h"
+
+Timer heart_frequency(500,500);
 
 void Initial_HeartLED(void)
 {
@@ -17,11 +20,9 @@ void Initial_HeartLED(void)
 
 void HeartLed_Run()
 {
-	static uint32_t cnt = 0;
 	static bool LedOn = true;
-	if(++cnt > HEART_LED_PERIOD)
+	if(heart_frequency.isAbsoluteTimeUp())
 	{
-		cnt = 0;
 		LedOn = !LedOn;
 	}
 	
