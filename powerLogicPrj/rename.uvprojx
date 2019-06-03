@@ -520,9 +520,9 @@
               <FilePath>..\F1HAL\CUsart.cpp</FilePath>
             </File>
             <File>
-              <FileName>stmflash.cpp</FileName>
+              <FileName>stmflashV2.cpp</FileName>
               <FileType>8</FileType>
-              <FilePath>..\F1HAL\stmflash.cpp</FilePath>
+              <FilePath>..\F1HAL\stmflashV2.cpp</FilePath>
             </File>
           </Files>
         </Group>
