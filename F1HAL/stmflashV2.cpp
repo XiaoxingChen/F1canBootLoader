@@ -1,4 +1,4 @@
-#include "stmflash.h"
+#include "stmflashV2.h"
 
  
 u16 STMFLASH_BUF[STM_SECTOR_SIZE/2];//最多是2K字节
