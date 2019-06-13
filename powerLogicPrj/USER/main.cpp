@@ -17,7 +17,7 @@
 
 #include "exti_monitor.h"
 
-extern const uint8_t FIRMWARE_VERSION = 0x11;
+extern const uint8_t FIRMWARE_VERSION = 0x12;
 
 /*************************************************************************/
 #include "power_state_data.h"
@@ -90,6 +90,7 @@ int main()
 				SEGGER_RTT_printf(0, "\r\n 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x \r\n", PSGlobalData::Instance()->arrary[0], 
 						PSGlobalData::Instance()->arrary[1],PSGlobalData::Instance()->arrary[2],PSGlobalData::Instance()->arrary[3],PSGlobalData::Instance()->arrary[4],
 						PSGlobalData::Instance()->arrary[5],PSGlobalData::Instance()->arrary[6],PSGlobalData::Instance()->arrary[7],PSGlobalData::Instance()->arrary[8],PSGlobalData::Instance()->arrary[9]);
+				SEGGER_RTT_printf(0, "\r\n Firmvision is 0x%02x \r\n", FIRMWARE_VERSION);
 			}
 		}
 	}

@@ -11,18 +11,18 @@ const u8 PC_POWER_ON_RECORD_BUFFER[]={0x01,0xBB};
 const u8 PC_POWER_OFF_RECORD_BUFFER[]={0x00,0xBB};
 #define SIZE sizeof(BOARD_POWER_ON_RECORD_BUFFER)		//数组长度
 
-#define BOARD_POWER_STATE_FIRST_ADDRESS 0X08010400			//page 65首
-#define BOARD_POWER_STATE_END_ADDRESS 0X08010BFF//0X08010BFF			//page 66尾
+#define BOARD_POWER_STATE_FIRST_ADDRESS 0X08005000			//page 20首
+#define BOARD_POWER_STATE_END_ADDRESS 0X080057FF//0X08010BFF			//page 21尾
 
-#define SWITCH_TIMES_FIRST_ADDRESS 0X08015800				//page 86首
-#define SWITCH_TIMES_END_ADDRESS 0x08015FFF 				//page 87尾
+#define SWITCH_TIMES_FIRST_ADDRESS 0X08005C00				//page 23首
+#define SWITCH_TIMES_END_ADDRESS 0x08005FFF 				//page 23尾
 
-#define POWERGOOD_STATE_FIRST_ADDRESS 0x0801AC00			//page 107首
-#define POWERGOOD_STATE_END_ADDRESS	0x0801AFFF				//page 107尾
+#define POWERGOOD_STATE_FIRST_ADDRESS 0x08006400			//page 25首
+#define POWERGOOD_STATE_END_ADDRESS	0x080067FF				//page 25尾
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 //用户根据自己的需要设置
-#define STM32_FLASH_SIZE  127	 		//所选STM32的FLASH容量大小(单位为K)
+#define STM32_FLASH_SIZE  64	 		//所选STM32的FLASH容量大小(单位为K)
 #define STM32_FLASH_WREN 1              //使能FLASH写入(0，不是能;1，使能)
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 #if STM32_FLASH_SIZE<256
