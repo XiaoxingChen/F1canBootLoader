@@ -17,7 +17,7 @@
 
 #include "exti_monitor.h"
 
-extern const uint8_t FIRMWARE_VERSION = 0x10;
+extern const uint8_t FIRMWARE_VERSION = 0x11;
 
 /*************************************************************************/
 #include "power_state_data.h"
@@ -28,7 +28,7 @@ extern const uint8_t FIRMWARE_VERSION = 0x10;
 
 /*************************************************************************/
 const uint8_t SPI_TX_BUFFER_SIZE = 10;
-const bool DEBUG = 0;
+const bool DEBUG = 1;
 uint8_t spi_tx_buffer_pointer = 0;
 
 int main()
