@@ -1,5 +1,6 @@
 #ifndef LOGIC_OUT_H
 #define LOGIC_OUT_H
+#include "stm32f10x.h"
 
 #define BATT_EN_PIN				GPIO_Pin_1
 #define BATT_EN_GPIO			GPIOB
@@ -20,6 +21,7 @@
 #define pc_en_line_high() GPIO_SetBits(PC_EN_GPIO, PC_EN_PIN)
 
 void logic_pin_config(void);
+void pcEnableKeyConfig(uint8_t od_or_floating);
 
 #endif
 //end of file

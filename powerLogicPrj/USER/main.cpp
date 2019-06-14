@@ -42,7 +42,8 @@ int main()
 	
 	PSGlobalData::Instance()->is_close_exti_interrupt = true;	//打开power_good外部中断检测
 	
-	EXTI_GPIO_Init();					//外部中断检测初始化																												
+	EXTI_GPIO_Init();					//外部中断检测初始化	
+	
 	EXTI_Init();
 	
 	logic_pin_config();					//电池开关、PC开机键、板子使能键的初始化

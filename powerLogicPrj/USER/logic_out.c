@@ -19,12 +19,29 @@ void logic_pin_config(void)
 	GPIO_Init(BRD_nEN_GPIO,&GPIO_InitStructure);
 	
 	RCC_APB2PeriphClockCmd( RCC_APB2Periph_GPIOA<< (((uint32_t)PC_EN_GPIO-(uint32_t)GPIOA)/0x400), ENABLE);
-	GPIO_InitStructure.GPIO_Pin  = PC_EN_PIN;		
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_OD;		
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
-	GPIO_Init(PC_EN_GPIO, &GPIO_InitStructure);
+
+	//pc_en_line_high();
+	pcEnableKeyConfig(2);
+}
+
+void pcEnableKeyConfig(uint8_t od_or_floating)
+{
+	GPIO_InitTypeDef	GPIO_InitStructure;
+	if(od_or_floating == 2)
+	{
+		GPIO_InitStructure.GPIO_Pin  = PC_EN_PIN;		
+		GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;		
+		GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
+		GPIO_Init(PC_EN_GPIO, &GPIO_InitStructure);
+	}
+	else if (od_or_floating == 1)
+	{
+		GPIO_InitStructure.GPIO_Pin  = PC_EN_PIN;		
+		GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_OD;		
+		GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
+		GPIO_Init(PC_EN_GPIO, &GPIO_InitStructure);
+	}
 	
-	pc_en_line_high();
 }
 
 //end of file

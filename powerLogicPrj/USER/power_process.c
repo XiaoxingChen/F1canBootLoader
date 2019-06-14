@@ -9,6 +9,7 @@ Timer openpc(500,500);
 Timer close_pc_key_timer(2000,2000);
 Timer closepc(500,500);
 Timer force_close_pc_timer(40000,40000);
+Timer wait_pc_power_timer(200, 200);
 
 bool is_openpc_ready = true;
 bool is_closepc_ready = false;
@@ -22,6 +23,8 @@ bool is_force_close_pc = false;
 bool is_over_time_monitor = false;
 bool is_open_key_finished = false;
 bool is_close_key_finished = false;
+bool is_can_wait_pc_power = false;
+bool is_wait_pc_power_timer_open = true;
 
 
 void powerProcess()
@@ -31,9 +34,10 @@ void powerProcess()
 		PSGlobalData::Instance()->is_close_exti_interrupt = true;			//打开外部中断，检测power_good上升沿
 		if((GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_2) == 1) && !is_open_key_finished)
 		{
+			pcEnableKeyConfig(2);			//开机键配置为浮空输入，防止上电冲击
 			launch_board();
 			enable_battery();
-			is_can_open_pc_process = true;
+			is_can_wait_pc_power = true;
 			/**********************************************开机读取上次状态***************************************************************************************************************************/
 			traverseLastPowerArrary(BOARD_POWER_STATE_FIRST_ADDRESS, PSGlobalData::Instance()->board_power_state_address_now, PSGlobalData::Instance()->arrary_head_address_now);	//遍历最后一组标记码
 			memset(PSGlobalData::Instance()->arrary, 0, TX_BUFFER_SIZE);		//清空标记码，重新发送	
@@ -42,6 +46,23 @@ void powerProcess()
 			/********************************************************************************************************************************************************************************************/
 			PSGlobalData::Instance()->arrary[6] = PSGlobalData::Instance()->last_power_good_state;
 			is_open_key_finished = true;
+		}
+		
+		if(is_can_wait_pc_power)			//等待PC上电后
+		{
+			if(is_wait_pc_power_timer_open)
+			{
+				writeStateInPositionInFlash(PSGlobalData::Instance()->board_power_state_address_now, 0x01);		//写标记码,写操作后，最新位置更新为当前标记码位置
+				wait_pc_power_timer.reset();
+				is_wait_pc_power_timer_open = false;
+			}
+			if(wait_pc_power_timer.isAbsoluteTimeUp())		
+			{
+				pcEnableKeyConfig(1);						//上电200ms后才开机键配置为开漏输出，并拉高开机键
+				pc_en_line_high();
+				is_can_wait_pc_power = false;
+				is_can_open_pc_process = true;
+			}
 		}
 		
 		if(is_can_open_pc_process)
@@ -65,7 +86,6 @@ void powerProcess()
 				writeStateInPositionInFlash(PSGlobalData::Instance()->power_good_state_address_now, 0x00);						//开机正常记一下，power_good正常写入0x00
 				writeStateInPositionInFlash(PSGlobalData::Instance()->switch_times_address_now, PSGlobalData::Instance()->switch_times_h);			//把开机次数写进flash
 				writeStateInPositionInFlash(PSGlobalData::Instance()->switch_times_address_now, PSGlobalData::Instance()->switch_times_l);
-				writeStateInPositionInFlash(PSGlobalData::Instance()->board_power_state_address_now, 0x01);		//写标记码,写操作后，最新位置更新为当前标记码位置
 				/**************************************************************************************************************************************************************/
 				pc_en_line_high();
 				is_open_process_timer_open = true;
@@ -85,6 +105,7 @@ void powerProcess()
 			PSGlobalData::Instance()->is_close_exti_interrupt = false;			//关闭外部中断，不检测power_good上升沿
 			writeStateInPositionInFlash(PSGlobalData::Instance()->board_power_state_address_now, 0x05);
 			BaseTimer::Instance()->delay_ms(1000);
+			pcEnableKeyConfig(2);
 			shutdown_board();
 			disable_battery();
 			BaseTimer::Instance()->delay_ms(500);					//防止开机键在24V光耦衰减时的高检测，误开机
@@ -153,6 +174,7 @@ void powerProcess()
 		{
 			writeStateInPositionInFlash(PSGlobalData::Instance()->board_power_state_address_now, 0x06);
 			BaseTimer::Instance()->delay_ms(1000);
+			pcEnableKeyConfig(2);
 			shutdown_board();
 			disable_battery();
 			BaseTimer::Instance()->delay_ms(500);
@@ -176,6 +198,8 @@ void resetAllStatusBool()
 	is_over_time_monitor = false;
 	is_open_key_finished = false;
 	is_close_key_finished = false;
+	is_can_wait_pc_power =false;
+	is_wait_pc_power_timer_open = true;
 }
 
 void judgeAndErrasePowerGoodPartition()
