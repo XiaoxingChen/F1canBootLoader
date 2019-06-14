@@ -1,6 +1,7 @@
 #include "exti_monitor.h"
 #include "power_state_data.h"
 #include "power_state_recoder_manager.h"
+#include "Timer.h"
 void EXTI_GPIO_Init(void) 
 { 
 	GPIO_InitTypeDef GPIO_InitStructure;
@@ -40,6 +41,7 @@ void EXTI9_5_IRQHandler (void)
 		if (EXTI_GetITStatus(EXTI_Line5) != RESET)
 		{
 			writeStateInPositionInFlash(PSGlobalData::Instance()->power_good_state_address_now, 0x01);
+			PSGlobalData::Instance()->is_close_exti_interrupt = false;			//关闭外部中断，不检测power_good上升沿
 		}
 	}
 	EXTI_ClearITPendingBit(EXTI_Line5);

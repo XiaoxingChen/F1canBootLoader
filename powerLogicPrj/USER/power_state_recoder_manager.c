@@ -10,10 +10,11 @@ void traverseLastPostionAndStateInFlash(const uint32_t block_first_address, cons
 	address_now = address_temp;
     while(address_temp <= (block_end_address - 1))                         //end the cycle while at the end of block 
     {
-        flasher::Instance()->Read(address_temp, (u16*)state_temp, 2);
+        flasher::Instance()->Read(address_temp, (u16*)state_temp, 1);
         if ((state_temp[0] != 0xFF) && (state_temp[1] != 0xFF)) 
 		{	
-			address_temp += 2;      //go on traverse
+			if(address_temp == (block_end_address - 1))	address_now = address_temp;
+			address_temp += 2;      //go on traverse	
         }
 		else
         {
@@ -31,7 +32,7 @@ void traverseLastPowerArrary(const uint32_t block_first_address, const uint32_t 
 	array_head_address = address_arrary_temp;
 	while(address_arrary_temp >= block_first_address)
 	{
-		flasher::Instance()->Read(address_arrary_temp, (u16*)state_temp, 2);
+		flasher::Instance()->Read(address_arrary_temp, (u16*)state_temp, 1);
 		
 		if((state_temp[0] == 0x01) && (state_temp[1] == 0xAA))
 		{
@@ -60,15 +61,9 @@ void readLastPowerArrary(uint32_t arrary_head, uint32_t arrary_tail, uint8_t* ar
 
 void writeStateInPositionInFlash(uint32_t & address_now, uint8_t state)
 {
+	__set_PRIMASK(1); 	//关中断
 	uint8_t check_first_temp[2];
 	u8 write_state[]={state,0xAA};
-	if(((POWERGOOD_STATE_END_ADDRESS-1-address_now)/2 < 1) && (address_now != POWERGOOD_STATE_FIRST_ADDRESS))
-	{
-		FLASH_Unlock();	
-		FLASH_ErasePage(POWERGOOD_STATE_FIRST_ADDRESS);
-		FLASH_Lock();
-		address_now = POWERGOOD_STATE_FIRST_ADDRESS;
-	}
 	if((0x01 == state) && ((BOARD_POWER_STATE_END_ADDRESS-1-address_now) < 10) && (address_now != BOARD_POWER_STATE_FIRST_ADDRESS))
 	{
 		FLASH_Unlock();	
@@ -77,17 +72,17 @@ void writeStateInPositionInFlash(uint32_t & address_now, uint8_t state)
 		FLASH_Lock();
 		address_now = BOARD_POWER_STATE_FIRST_ADDRESS;
 	}
-	if(((SWITCH_TIMES_END_ADDRESS+1-address_now) < 4) && (address_now != SWITCH_TIMES_FIRST_ADDRESS))
+	if(((SWITCH_TIMES_END_ADDRESS-1-address_now) <= 0) && (address_now != SWITCH_TIMES_FIRST_ADDRESS))
 	{
-		FLASH_Unlock();	
-		FLASH_ErasePage(SWITCH_TIMES_FIRST_ADDRESS);
+		FLASH_Unlock();
+		FLASH_ErasePage(SWITCH_TIMES_FIRST_ADDRESS);		
 		FLASH_Lock();
 		address_now = SWITCH_TIMES_FIRST_ADDRESS;
 	}
 	if((address_now == BOARD_POWER_STATE_FIRST_ADDRESS) || (address_now == SWITCH_TIMES_FIRST_ADDRESS) || (address_now == POWERGOOD_STATE_FIRST_ADDRESS))
 	{
-		flasher::Instance()->Read(address_now, (u16*)check_first_temp, 2);
-		if(check_first_temp[0] != 0xFF && check_first_temp[1] != 0xFF)
+		flasher::Instance()->Read(address_now, (u16*)check_first_temp, 1);
+		if((check_first_temp[0] != 0xFF) && (check_first_temp[1] != 0xFF))
 		{
 			address_now += 2;
 		}
@@ -97,7 +92,8 @@ void writeStateInPositionInFlash(uint32_t & address_now, uint8_t state)
 	{
 		address_now += 2;
 		flasher::Instance()->Write(address_now, (u16*)write_state, 1);
-	}		
+	}
+	__set_PRIMASK(0); 	//开中断	
 }
 
 void readLastSwitchTimes(uint32_t & address_now, uint8_t & switch_times_h, uint8_t & switch_times_l)
@@ -112,10 +108,14 @@ void readLastSwitchTimes(uint32_t & address_now, uint8_t & switch_times_h, uint8
 void readLastPowerGoodState(uint32_t & address_now, uint8_t & last_power_good_state)
 {
 	uint8_t state_temp[2];
-	if(address_now != POWERGOOD_STATE_FIRST_ADDRESS)
+	flasher::Instance()->Read(address_now, (u16*)state_temp, 1);
+	if(address_now == POWERGOOD_STATE_FIRST_ADDRESS)
 	{
-		flasher::Instance()->Read(address_now, (u16*)state_temp, 1);
-		last_power_good_state = state_temp[0];
+		if((state_temp[0] != 0xFF) && (state_temp[1] != 0xFF))	
+		{
+			last_power_good_state = state_temp[0];
+		}
+		else last_power_good_state = 0x00;
 	}
-	else	last_power_good_state = 0x00;
+	else	last_power_good_state = state_temp[0];
 }

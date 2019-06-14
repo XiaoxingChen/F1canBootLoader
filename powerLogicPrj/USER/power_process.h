@@ -2,3 +2,4 @@
 
 void powerProcess();
 void resetAllStatusBool();
+void judgeAndErrasePowerGoodPartition();

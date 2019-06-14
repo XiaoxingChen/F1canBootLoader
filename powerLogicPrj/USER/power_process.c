@@ -40,7 +40,8 @@ void powerProcess()
 			readLastPowerArrary(PSGlobalData::Instance()->arrary_head_address_now, PSGlobalData::Instance()->board_power_state_address_now, PSGlobalData::Instance()->arrary);		//读出最后一组标记码
 			readLastPowerGoodState(PSGlobalData::Instance()->power_good_state_address_now, PSGlobalData::Instance()->last_power_good_state);										//读出上一次的power_good状态
 			/********************************************************************************************************************************************************************************************/
-			is_open_key_finished = true;								
+			PSGlobalData::Instance()->arrary[6] = PSGlobalData::Instance()->last_power_good_state;
+			is_open_key_finished = true;
 		}
 		
 		if(is_can_open_pc_process)
@@ -54,11 +55,11 @@ void powerProcess()
 			}
 			if (openpc.isAbsoluteTimeUp())
 			{
+				judgeAndErrasePowerGoodPartition();		//单独提出来做，当写到分区最后一字节时，不能放在写函数里面，Flash擦写一页20ms,断电9ms
 				/*****************************************************************开机记录动作*******************************************************************************/
 				PSGlobalData::Instance()->switch_times++;																					//每开机一次，自增一次
 				PSGlobalData::Instance()->switch_times_h = (uint8_t)((PSGlobalData::Instance()->switch_times & 0xFF00) >> 8);
 				PSGlobalData::Instance()->switch_times_l = (uint8_t)(PSGlobalData::Instance()->switch_times & 0x00FF);
-				PSGlobalData::Instance()->arrary[6] = PSGlobalData::Instance()->last_power_good_state;
 				PSGlobalData::Instance()->arrary[7] = (uint8_t)PSGlobalData::Instance()->switch_times_h;									//填进发送序列中
 				PSGlobalData::Instance()->arrary[8] = (uint8_t)PSGlobalData::Instance()->switch_times_l;
 				writeStateInPositionInFlash(PSGlobalData::Instance()->power_good_state_address_now, 0x00);						//开机正常记一下，power_good正常写入0x00
@@ -81,12 +82,14 @@ void powerProcess()
 	{
 		if (GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_0) == 1)                   //PC已经关机了，所以直接断开电源GPIOA, GPIO_Pin_0		关机是高
 		{
+			PSGlobalData::Instance()->is_close_exti_interrupt = false;			//关闭外部中断，不检测power_good上升沿
 			writeStateInPositionInFlash(PSGlobalData::Instance()->board_power_state_address_now, 0x05);
 			BaseTimer::Instance()->delay_ms(1000);
 			shutdown_board();
 			disable_battery();
 			BaseTimer::Instance()->delay_ms(500);					//防止开机键在24V光耦衰减时的高检测，误开机
 			/********************************************/
+			
 			resetAllStatusBool();
 		}
 		
@@ -175,5 +178,14 @@ void resetAllStatusBool()
 	is_close_key_finished = false;
 }
 
-
+void judgeAndErrasePowerGoodPartition()
+{
+	if(((POWERGOOD_STATE_END_ADDRESS-1-PSGlobalData::Instance()->power_good_state_address_now) <= 4) && (PSGlobalData::Instance()->power_good_state_address_now != POWERGOOD_STATE_FIRST_ADDRESS))
+	{
+		FLASH_Unlock();	
+		FLASH_ErasePage(POWERGOOD_STATE_FIRST_ADDRESS);
+		FLASH_Lock();
+		PSGlobalData::Instance()->power_good_state_address_now = POWERGOOD_STATE_FIRST_ADDRESS;
+	}	
+}
 
