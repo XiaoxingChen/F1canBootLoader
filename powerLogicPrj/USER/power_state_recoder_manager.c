@@ -11,7 +11,7 @@ void traverseLastPostionAndStateInFlash(const uint32_t block_first_address, cons
     while(address_temp <= (block_end_address - 1))                         //end the cycle while at the end of block 
     {
         flasher::Instance()->Read(address_temp, (u16*)state_temp, 1);
-        if ((state_temp[0] != 0xFF) && (state_temp[1] != 0xFF)) 
+        if ((state_temp[1] != 0xFF)) 				//不能判断自增位，如开关机次数，会增加到0xFF
 		{	
 			if(address_temp == (block_end_address - 1))	address_now = address_temp;
 			address_temp += 2;      //go on traverse	

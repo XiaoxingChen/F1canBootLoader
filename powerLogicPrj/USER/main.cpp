@@ -17,7 +17,7 @@
 
 #include "exti_monitor.h"
 
-extern const uint8_t FIRMWARE_VERSION = 0x12;
+extern const uint8_t FIRMWARE_VERSION = 0x13;
 
 /*************************************************************************/
 #include "power_state_data.h"
