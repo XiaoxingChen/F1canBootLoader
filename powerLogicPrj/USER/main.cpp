@@ -25,10 +25,13 @@ extern const uint8_t FIRMWARE_VERSION = 0x13;
 #include "power_state_recoder_manager.h"
 #include "spi.h"
 #include "SEGGER_RTT.h"
+#include "PowerManager.h"
+#include "PdoManager.h"
+#include "LedManager.h"
 
 /*************************************************************************/
 const uint8_t SPI_TX_BUFFER_SIZE = 10;
-const bool DEBUG = 1;
+const bool DEBUG = 0;
 uint8_t spi_tx_buffer_pointer = 0;
 
 int main()
@@ -37,63 +40,122 @@ int main()
 	CommonConfig();
 	
 	BaseTimer::Instance()->initialize();
+	/*****************************************NEW******************************************/
+	PowerManager power_manager;
+	power_manager.init();
 	
-	key_init();							//开机按钮初始化
+	power_manager.openiMX8();
+	power_manager.openLte();
+	power_manager.openSubIG();
+	power_manager.openSwitch();
+	power_manager.openWifi();
 	
-	PSGlobalData::Instance()->is_close_exti_interrupt = true;	//打开power_good外部中断检测
+	PdoManager pdo_manager;
+	pdo_manager.pdoInit();
 	
-	EXTI_GPIO_Init();					//外部中断检测初始化	
+	pdo_manager.openPDO0();
+	pdo_manager.openPDO1();
+	pdo_manager.openPDO2();
+	pdo_manager.openPDO3();
+	pdo_manager.openPDO4();
+	pdo_manager.openPDO5();
 	
-	EXTI_Init();
+	pdo_manager.adcInit();
 	
-	logic_pin_config();					//电池开关、PC开机键、板子使能键的初始化
+//	LedManager led;
+//	led.init();
+//	led.openLED();
+//	static Timer led_freq(100,100);
+
+	
+	
+	/***************************************************************************************/
+	//key_init();							//开机按钮初始化
+	
+	//PSGlobalData::Instance()->is_close_exti_interrupt = true;	//打开power_good外部中断检测
+	
+	//EXTI_GPIO_Init();					//外部中断检测初始化	
+	
+	//EXTI_Init();
+	
+	//logic_pin_config();					//电池开关、PC开机键、板子使能键的初始化
 	
 	Initial_HeartLED();					//心跳灯的初始化，500ms反转一次
 	
-	spiInit();							//SPI初始化
+	//spiInit();							//SPI初始化
 
-	traverseLastPostionAndStateInFlash(BOARD_POWER_STATE_FIRST_ADDRESS, BOARD_POWER_STATE_END_ADDRESS, PSGlobalData::Instance()->board_power_state_address_now);	//遍历board区的最后一个字节的位置
-	
-	traverseLastPostionAndStateInFlash(SWITCH_TIMES_FIRST_ADDRESS, SWITCH_TIMES_END_ADDRESS, PSGlobalData::Instance()->switch_times_address_now);					//遍历开关机次数区的最后一个字节的位置
-	
-	traverseLastPostionAndStateInFlash(POWERGOOD_STATE_FIRST_ADDRESS, POWERGOOD_STATE_END_ADDRESS, PSGlobalData::Instance()->power_good_state_address_now);			//遍历power_good区的最后一个字节的位置
-	
-	/***************************************************首次开关机次数的初始值设定**********************************************************************/
-	readLastSwitchTimes(PSGlobalData::Instance()->switch_times_address_now, PSGlobalData::Instance()->switch_times_h, PSGlobalData::Instance()->switch_times_l);
-	if((PSGlobalData::Instance()->switch_times_address_now == SWITCH_TIMES_FIRST_ADDRESS) && (PSGlobalData::Instance()->switch_times_h == 0xFF) && (PSGlobalData::Instance()->switch_times_l == 0xFF))			//当前地址为首地址
-	{
-		PSGlobalData::Instance()->switch_times_h = 0x00;
-		PSGlobalData::Instance()->switch_times_l = 0x00;
-	}
-	PSGlobalData::Instance()->switch_times = ((uint16_t)PSGlobalData::Instance()->switch_times_h << 8) + (uint16_t)PSGlobalData::Instance()->switch_times_l;
-	/****************************************************************************************************************************************************/
+//	traverseLastPostionAndStateInFlash(BOARD_POWER_STATE_FIRST_ADDRESS, BOARD_POWER_STATE_END_ADDRESS, PSGlobalData::Instance()->board_power_state_address_now);	//遍历board区的最后一个字节的位置
+//	
+//	traverseLastPostionAndStateInFlash(SWITCH_TIMES_FIRST_ADDRESS, SWITCH_TIMES_END_ADDRESS, PSGlobalData::Instance()->switch_times_address_now);					//遍历开关机次数区的最后一个字节的位置
+//	
+//	traverseLastPostionAndStateInFlash(POWERGOOD_STATE_FIRST_ADDRESS, POWERGOOD_STATE_END_ADDRESS, PSGlobalData::Instance()->power_good_state_address_now);			//遍历power_good区的最后一个字节的位置
+//	
+//	/***************************************************首次开关机次数的初始值设定**********************************************************************/
+//	readLastSwitchTimes(PSGlobalData::Instance()->switch_times_address_now, PSGlobalData::Instance()->switch_times_h, PSGlobalData::Instance()->switch_times_l);
+//	if((PSGlobalData::Instance()->switch_times_address_now == SWITCH_TIMES_FIRST_ADDRESS) && (PSGlobalData::Instance()->switch_times_h == 0xFF) && (PSGlobalData::Instance()->switch_times_l == 0xFF))			//当前地址为首地址
+//	{
+//		PSGlobalData::Instance()->switch_times_h = 0x00;
+//		PSGlobalData::Instance()->switch_times_l = 0x00;
+//	}
+//	PSGlobalData::Instance()->switch_times = ((uint16_t)PSGlobalData::Instance()->switch_times_h << 8) + (uint16_t)PSGlobalData::Instance()->switch_times_l;
+//	/****************************************************************************************************************************************************/
 
 	Timer spiTrasferTimer(2,2);		//SPI发送间隔定时器
+	Timer adc_freq(5,5);
+	Timer pdo_freq(500,500);
 
 	while(1)
 	{
-		powerProcess();				//电源过程
-		HeartLed_Run();		
-		if(spiTrasferTimer.isAbsoluteTimeUp())
-		{
-			/**************************************SPI发送****************************************/
-			PSGlobalData::Instance()->arrary[0] = 0xA5;					//帧头
-			PSGlobalData::Instance()->arrary[9] = 0x5A;					//帧尾
-			spiSendByte(PSGlobalData::Instance()->arrary[spi_tx_buffer_pointer]);	//单字节发送
-			spi_tx_buffer_pointer++;
-			if (spi_tx_buffer_pointer >= SPI_TX_BUFFER_SIZE) spi_tx_buffer_pointer = 0;
-			/*************************************************************************************/
-			if(DEBUG)
-			{
-				SEGGER_RTT_printf(0,"\r\n board_power_state_address_now:0x%08x \r\n", PSGlobalData::Instance()->board_power_state_address_now);
-				SEGGER_RTT_printf(0,"\r\n switch_times_address_now:0x%08x \r\n", PSGlobalData::Instance()->switch_times_address_now);
-				SEGGER_RTT_printf(0,"\r\n power_good_state_address_now:0x%08x \r\n", PSGlobalData::Instance()->power_good_state_address_now);
-				SEGGER_RTT_printf(0, "\r\n 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x \r\n", PSGlobalData::Instance()->arrary[0], 
-						PSGlobalData::Instance()->arrary[1],PSGlobalData::Instance()->arrary[2],PSGlobalData::Instance()->arrary[3],PSGlobalData::Instance()->arrary[4],
-						PSGlobalData::Instance()->arrary[5],PSGlobalData::Instance()->arrary[6],PSGlobalData::Instance()->arrary[7],PSGlobalData::Instance()->arrary[8],PSGlobalData::Instance()->arrary[9]);
-				SEGGER_RTT_printf(0, "\r\n Firmvision is 0x%02x \r\n", FIRMWARE_VERSION);
-			}
+		//powerProcess();				//电源过程
+		HeartLed_Run();
+		if(adc_freq.isAbsoluteTimeUp()){
+			SEGGER_RTT_printf(0, "\npd0 value is %d\r\n",pdo_manager.getPDOADCAfterFilter(0));
+			SEGGER_RTT_printf(0, "pd1 value is %d\r\n",pdo_manager.getPDOADCAfterFilter(1));
+			SEGGER_RTT_printf(0, "pd2 value is %d\r\n",pdo_manager.getPDOADCAfterFilter(2));
+			SEGGER_RTT_printf(0, "pd3 value is %d\r\n",pdo_manager.getPDOADCAfterFilter(3));
+			SEGGER_RTT_printf(0, "pd4 value is %d\r\n",pdo_manager.getPDOADCAfterFilter(4));
+			SEGGER_RTT_printf(0, "pd5 value is %d\r\n",pdo_manager.getPDOADCAfterFilter(5));
 		}
+//		if(pdo_freq.isAbsoluteTimeUp()){
+//			static bool turn = false;
+//			turn = !turn;
+//			if(turn){
+//				pdo_manager.closePDO0();
+//				pdo_manager.closePDO1();
+//				pdo_manager.closePDO2();
+//				pdo_manager.closePDO3();
+//				pdo_manager.closePDO4();
+//				pdo_manager.closePDO5();
+//			}else{
+//				pdo_manager.openPDO0();
+//				pdo_manager.openPDO1();
+//				pdo_manager.openPDO2();
+//				pdo_manager.openPDO3();
+//				pdo_manager.openPDO4();
+//				pdo_manager.openPDO5();
+//			}
+//		}
+		
+//		if(spiTrasferTimer.isAbsoluteTimeUp())
+//		{
+//			/**************************************SPI发送****************************************/
+//			PSGlobalData::Instance()->arrary[0] = 0xA5;					//帧头
+//			PSGlobalData::Instance()->arrary[9] = 0x5A;					//帧尾
+//			spiSendByte(PSGlobalData::Instance()->arrary[spi_tx_buffer_pointer]);	//单字节发送
+//			spi_tx_buffer_pointer++;
+//			if (spi_tx_buffer_pointer >= SPI_TX_BUFFER_SIZE) spi_tx_buffer_pointer = 0;
+//			/*************************************************************************************/
+//			if(DEBUG)
+//			{
+//				SEGGER_RTT_printf(0,"\r\n board_power_state_address_now:0x%08x \r\n", PSGlobalData::Instance()->board_power_state_address_now);
+//				SEGGER_RTT_printf(0,"\r\n switch_times_address_now:0x%08x \r\n", PSGlobalData::Instance()->switch_times_address_now);
+//				SEGGER_RTT_printf(0,"\r\n power_good_state_address_now:0x%08x \r\n", PSGlobalData::Instance()->power_good_state_address_now);
+//				SEGGER_RTT_printf(0, "\r\n 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x \r\n", PSGlobalData::Instance()->arrary[0], 
+//						PSGlobalData::Instance()->arrary[1],PSGlobalData::Instance()->arrary[2],PSGlobalData::Instance()->arrary[3],PSGlobalData::Instance()->arrary[4],
+//						PSGlobalData::Instance()->arrary[5],PSGlobalData::Instance()->arrary[6],PSGlobalData::Instance()->arrary[7],PSGlobalData::Instance()->arrary[8],PSGlobalData::Instance()->arrary[9]);
+//				SEGGER_RTT_printf(0, "\r\n Firmvision is 0x%02x \r\n", FIRMWARE_VERSION);
+//			}
+//		}
 	}
 	return 0;
 }
