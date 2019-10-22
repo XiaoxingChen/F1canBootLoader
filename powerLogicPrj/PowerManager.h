@@ -1,6 +1,7 @@
 #ifndef _POWER_MANAGER_H_
 #define _POWER_MANAGER_H_
 #include "stm32f10x.h"
+#include "Singleton.h"
 #define IMX8_PORT   GPIOB
 #define IMX8_PIN    GPIO_Pin_8
 
@@ -50,6 +51,8 @@ void PowerManager::init()
 	GPIO_InitStructure.GPIO_Speed=GPIO_Speed_50MHz;
 	GPIO_Init(GPIOC,&GPIO_InitStructure);
 }
+
+typedef NormalSingleton<PowerManager>	Power_Manager;
 #endif
 
 

@@ -41,26 +41,23 @@ int main()
 	
 	BaseTimer::Instance()->initialize();
 	/*****************************************NEW******************************************/
-	PowerManager power_manager;
-	power_manager.init();
+	Power_Manager::Instance()->init();
 	
-	power_manager.openiMX8();
-	power_manager.openLte();
-	power_manager.openSubIG();
-	power_manager.openSwitch();
-	power_manager.openWifi();
+//	power_manager.openiMX8();
+//	power_manager.openLte();
+//	power_manager.openSubIG();
+//	power_manager.openSwitch();
+//	power_manager.openWifi();
 	
-	PdoManager pdo_manager;
-	pdo_manager.pdoInit();
+	Pdo_Manager::Instance()->pdoInit();
+	Pdo_Manager::Instance()->adcInit();
 	
-	pdo_manager.openPDO0();
-	pdo_manager.openPDO1();
-	pdo_manager.openPDO2();
-	pdo_manager.openPDO3();
-	pdo_manager.openPDO4();
-	pdo_manager.openPDO5();
-	
-	pdo_manager.adcInit();
+//	pdo_manager.openPDO0();
+//	pdo_manager.openPDO1();
+//	pdo_manager.openPDO2();
+//	pdo_manager.openPDO3();
+//	pdo_manager.openPDO4();
+//	pdo_manager.openPDO5();
 	
 //	LedManager led;
 //	led.init();
@@ -70,7 +67,7 @@ int main()
 	
 	
 	/***************************************************************************************/
-	//key_init();							//开机按钮初始化
+	key_init();							//开机按钮初始化
 	
 	//PSGlobalData::Instance()->is_close_exti_interrupt = true;	//打开power_good外部中断检测
 	
@@ -106,15 +103,15 @@ int main()
 
 	while(1)
 	{
-		//powerProcess();				//电源过程
+		powerProcess();				//电源过程
 		HeartLed_Run();
 		if(adc_freq.isAbsoluteTimeUp()){
-			SEGGER_RTT_printf(0, "\npd0 value is %d\r\n",pdo_manager.getPDOADCAfterFilter(0));
-			SEGGER_RTT_printf(0, "pd1 value is %d\r\n",pdo_manager.getPDOADCAfterFilter(1));
-			SEGGER_RTT_printf(0, "pd2 value is %d\r\n",pdo_manager.getPDOADCAfterFilter(2));
-			SEGGER_RTT_printf(0, "pd3 value is %d\r\n",pdo_manager.getPDOADCAfterFilter(3));
-			SEGGER_RTT_printf(0, "pd4 value is %d\r\n",pdo_manager.getPDOADCAfterFilter(4));
-			SEGGER_RTT_printf(0, "pd5 value is %d\r\n",pdo_manager.getPDOADCAfterFilter(5));
+//			SEGGER_RTT_printf(0, "\npd0 value is %d\r\n",pdo_manager.getPDOADCAfterFilter(0));
+//			SEGGER_RTT_printf(0, "pd1 value is %d\r\n",pdo_manager.getPDOADCAfterFilter(1));
+//			SEGGER_RTT_printf(0, "pd2 value is %d\r\n",pdo_manager.getPDOADCAfterFilter(2));
+//			SEGGER_RTT_printf(0, "pd3 value is %d\r\n",pdo_manager.getPDOADCAfterFilter(3));
+//			SEGGER_RTT_printf(0, "pd4 value is %d\r\n",pdo_manager.getPDOADCAfterFilter(4));
+//			SEGGER_RTT_printf(0, "pd5 value is %d\r\n",pdo_manager.getPDOADCAfterFilter(5));
 		}
 //		if(pdo_freq.isAbsoluteTimeUp()){
 //			static bool turn = false;

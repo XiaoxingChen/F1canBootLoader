@@ -2,6 +2,7 @@
 #define _PDO_MANAGER_H_
 
 #include "stm32f10x.h"
+#include "Singleton.h"
 
 #define PDO0_IN_PORT   GPIOA
 #define PDO0_IN_PIN    GPIO_Pin_4
@@ -177,5 +178,7 @@ uint16_t PdoManager::AdcGetVal(void)
 	ADC_SoftwareStartConvCmd(ADC1, ENABLE);/*开启转换*/
 	return ADC_GetConversionValue(ADC1);
 }
+
+typedef NormalSingleton<PdoManager>	Pdo_Manager;
 
 #endif

@@ -32,7 +32,7 @@ void powerProcess()
 	if (is_openpc_ready)              //按了下开机按键，开机开始按下后是高
 	{
 		PSGlobalData::Instance()->is_close_exti_interrupt = true;			//打开外部中断，检测power_good上升沿
-		if((GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_2) == 1) && !is_open_key_finished)
+		if((GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_2) == 1) && !is_open_key_finished)
 		{
 			pcEnableKeyConfig(2);			//开机键配置为浮空输入，防止上电冲击
 			launch_board();
@@ -100,7 +100,7 @@ void powerProcess()
 
 	if(is_closepc_ready)
 	{
-		if (GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_0) == 1)                   //PC已经关机了，所以直接断开电源GPIOA, GPIO_Pin_0		关机是高
+		if (GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_0) == 1)                   //PC已经关机了，所以直接断开电源GPIOA, GPIO_Pin_0		关机是高
 		{
 			PSGlobalData::Instance()->is_close_exti_interrupt = false;			//关闭外部中断，不检测power_good上升沿
 			writeStateInPositionInFlash(PSGlobalData::Instance()->board_power_state_address_now, 0x05);
@@ -114,7 +114,7 @@ void powerProcess()
 			resetAllStatusBool();
 		}
 		
-		if((GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_2) == 1) && !is_close_key_time_enough)
+		if((GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_2) == 1) && !is_close_key_time_enough)
 		{
 			if (is_close_key_timer_open)
 			{
@@ -127,7 +127,7 @@ void powerProcess()
 				is_over_time_monitor = true;
 			}
 		}
-		else if ((GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_2) == 0))				//如果按下就松掉，那么时钟也要重新开
+		else if ((GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_2) == 0))				//如果按下就松掉，那么时钟也要重新开
 		{
 			is_close_key_timer_open = true;
 			is_close_key_time_enough = false;
@@ -135,7 +135,7 @@ void powerProcess()
 		
 		if(is_over_time_monitor)												//超过2s后松掉才执行后面的关机流程
 		{
-			if((GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_2) == 0) && !is_close_key_finished)
+			if((GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_2) == 0) && !is_close_key_finished)
 			{
 				is_over_time_monitor = true;
 				/****enter in normal close pc process********/

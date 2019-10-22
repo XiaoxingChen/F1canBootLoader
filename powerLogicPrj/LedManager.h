@@ -1,6 +1,7 @@
 #ifndef _LED_MANAGER_H_
 #define _LED_MANAGER_H_
 #include "stm32f10x.h"
+#include "Singleton.h"
 
 #define LED_PORT   	GPIOC
 #define LED_PIN		GPIO_Pin_13
@@ -31,4 +32,5 @@ void LedManager::init()
 	GPIO_Init(LED_PORT,&GPIO_InitStructure);
 }
 
+typedef NormalSingleton<LedManager>	Led_Manager;
 #endif
