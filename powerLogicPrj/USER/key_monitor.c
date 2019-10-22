@@ -17,7 +17,7 @@ struct key_struct
 
 key_type key_array[TOTAL_KEY_NUM] = 
 {
-	{GPIOB, GPIO_Pin_3, 0, RELEASED, "IS_PC_LAUNCH"}, //KEY_IS_PC_LAUNCH
+	{GPIOC, GPIO_Pin_4, 0, RELEASED, "IS_PC_LAUNCH"}, //KEY_IS_PC_LAUNCH
 	{GPIOB, GPIO_Pin_2, 1, RELEASED, "MODE1_LAUNCH"}, //KEY_LAUNCH
 }; 
 

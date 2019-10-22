@@ -4,11 +4,12 @@
 #include "power_state_data.h"
 #include "power_state_recoder_manager.h"
 #include "SEGGER_RTT.h"
+#include "PowerManager.h"
 
-Timer openpc(500,500);
+Timer openpc(4000,4000);
 Timer close_pc_key_timer(2000,2000);
 Timer closepc(500,500);
-Timer force_close_pc_timer(40000,40000);
+Timer force_close_pc_timer(10000,10000);
 Timer wait_pc_power_timer(200, 200);
 
 bool is_openpc_ready = true;
@@ -34,9 +35,11 @@ void powerProcess()
 		PSGlobalData::Instance()->is_close_exti_interrupt = true;			//打开外部中断，检测power_good上升沿
 		if((GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_2) == 1) && !is_open_key_finished)
 		{
-			pcEnableKeyConfig(2);			//开机键配置为浮空输入，防止上电冲击
-			launch_board();
-			enable_battery();
+			//pcEnableKeyConfig(2);			//开机键配置为浮空输入，防止上电冲击
+			//launch_board();
+			//enable_battery();
+			Power_Manager::Instance()->openiMX8();
+			SEGGER_RTT_printf(0, "open imx8\r\n");
 			is_can_wait_pc_power = true;
 			/**********************************************开机读取上次状态***************************************************************************************************************************/
 			traverseLastPowerArrary(BOARD_POWER_STATE_FIRST_ADDRESS, PSGlobalData::Instance()->board_power_state_address_now, PSGlobalData::Instance()->arrary_head_address_now);	//遍历最后一组标记码
@@ -58,8 +61,13 @@ void powerProcess()
 			}
 			if(wait_pc_power_timer.isAbsoluteTimeUp())		
 			{
-				pcEnableKeyConfig(1);						//上电200ms后才开机键配置为开漏输出，并拉高开机键
-				pc_en_line_high();
+				//pcEnableKeyConfig(1);						//上电200ms后才开机键配置为开漏输出，并拉高开机键
+				//pc_en_line_high();
+					Power_Manager::Instance()->openLte();
+					Power_Manager::Instance()->openSubIG();
+					Power_Manager::Instance()->openSwitch();
+					Power_Manager::Instance()->openWifi();
+				SEGGER_RTT_printf(0, "open next\r\n");
 				is_can_wait_pc_power = false;
 				is_can_open_pc_process = true;
 			}
@@ -68,7 +76,7 @@ void powerProcess()
 		if(is_can_open_pc_process)
 		{	
 			/*****************************************open pc process************************************/
-			pc_en_line_low();
+			//pc_en_line_low();
 			if (is_open_process_timer_open)             
 			{
 				openpc.reset();
@@ -87,7 +95,7 @@ void powerProcess()
 				writeStateInPositionInFlash(PSGlobalData::Instance()->switch_times_address_now, PSGlobalData::Instance()->switch_times_h);			//把开机次数写进flash
 				writeStateInPositionInFlash(PSGlobalData::Instance()->switch_times_address_now, PSGlobalData::Instance()->switch_times_l);
 				/**************************************************************************************************************************************************************/
-				pc_en_line_high();
+				//pc_en_line_high();
 				is_open_process_timer_open = true;
 				is_can_open_pc_process = false;
 				is_openpc_ready = false;
@@ -97,18 +105,25 @@ void powerProcess()
 			/*********************************************************************************************/
 		}
 	}
-
+	
 	if(is_closepc_ready)
 	{
-		if (GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_0) == 1)                   //PC已经关机了，所以直接断开电源GPIOA, GPIO_Pin_0		关机是高
+		if (GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_4) == 0)                   //PC已经关机了，所以直接断开电源GPIOA, GPIO_Pin_0		关机是高
 		{
 			PSGlobalData::Instance()->is_close_exti_interrupt = false;			//关闭外部中断，不检测power_good上升沿
 			writeStateInPositionInFlash(PSGlobalData::Instance()->board_power_state_address_now, 0x05);
 			BaseTimer::Instance()->delay_ms(1000);
-			pcEnableKeyConfig(2);
-			shutdown_board();
-			disable_battery();
-			BaseTimer::Instance()->delay_ms(500);					//防止开机键在24V光耦衰减时的高检测，误开机
+			//pcEnableKeyConfig(2);
+			//shutdown_board();
+			//disable_battery();
+			SEGGER_RTT_printf(0, "close imx8\r\n");
+			Power_Manager::Instance()->closeLte();
+			Power_Manager::Instance()->closeSub1G();
+			Power_Manager::Instance()->closeSwitch();
+			Power_Manager::Instance()->closeWifi();
+			BaseTimer::Instance()->delay_ms(500);
+			Power_Manager::Instance()->closeiMX8();
+								//防止开机键在24V光耦衰减时的高检测，误开机
 			/********************************************/
 			
 			resetAllStatusBool();
@@ -155,7 +170,7 @@ void powerProcess()
 		if(is_can_close_pc_process)                     //正常关机流程，关机按住500ms
 		{
 			
-			pc_en_line_low();
+			//pc_en_line_low();
 			if (is_close_process_timer_open)
 			{
 				closepc.reset();
@@ -163,7 +178,7 @@ void powerProcess()
 			}
 			if (closepc.isAbsoluteTimeUp())
 			{
-				pc_en_line_high();
+				//pc_en_line_high();
 				is_close_process_timer_open = true;
 				is_can_close_pc_process = false;
 				writeStateInPositionInFlash(PSGlobalData::Instance()->board_power_state_address_now, 0x04);
@@ -174,10 +189,16 @@ void powerProcess()
 		{
 			writeStateInPositionInFlash(PSGlobalData::Instance()->board_power_state_address_now, 0x06);
 			BaseTimer::Instance()->delay_ms(1000);
-			pcEnableKeyConfig(2);
-			shutdown_board();
-			disable_battery();
+			//pcEnableKeyConfig(2);
+			//shutdown_board();
+			//disable_battery();
+			SEGGER_RTT_printf(0, "force close imx8\r\n");
+			Power_Manager::Instance()->closeLte();
+			Power_Manager::Instance()->closeSub1G();
+			Power_Manager::Instance()->closeSwitch();
+			Power_Manager::Instance()->closeWifi();
 			BaseTimer::Instance()->delay_ms(500);
+			Power_Manager::Instance()->closeiMX8();
 			/********************************************/
 			resetAllStatusBool();
 		}

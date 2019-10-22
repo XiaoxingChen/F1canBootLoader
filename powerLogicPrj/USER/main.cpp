@@ -51,7 +51,8 @@ int main()
 	
 	Pdo_Manager::Instance()->pdoInit();
 	Pdo_Manager::Instance()->adcInit();
-	
+//	PdoManager pdo_manager;
+//	
 //	pdo_manager.openPDO0();
 //	pdo_manager.openPDO1();
 //	pdo_manager.openPDO2();
@@ -83,19 +84,19 @@ int main()
 
 //	traverseLastPostionAndStateInFlash(BOARD_POWER_STATE_FIRST_ADDRESS, BOARD_POWER_STATE_END_ADDRESS, PSGlobalData::Instance()->board_power_state_address_now);	//遍历board区的最后一个字节的位置
 //	
-//	traverseLastPostionAndStateInFlash(SWITCH_TIMES_FIRST_ADDRESS, SWITCH_TIMES_END_ADDRESS, PSGlobalData::Instance()->switch_times_address_now);					//遍历开关机次数区的最后一个字节的位置
+	traverseLastPostionAndStateInFlash(SWITCH_TIMES_FIRST_ADDRESS, SWITCH_TIMES_END_ADDRESS, PSGlobalData::Instance()->switch_times_address_now);					//遍历开关机次数区的最后一个字节的位置
 //	
 //	traverseLastPostionAndStateInFlash(POWERGOOD_STATE_FIRST_ADDRESS, POWERGOOD_STATE_END_ADDRESS, PSGlobalData::Instance()->power_good_state_address_now);			//遍历power_good区的最后一个字节的位置
 //	
-//	/***************************************************首次开关机次数的初始值设定**********************************************************************/
-//	readLastSwitchTimes(PSGlobalData::Instance()->switch_times_address_now, PSGlobalData::Instance()->switch_times_h, PSGlobalData::Instance()->switch_times_l);
-//	if((PSGlobalData::Instance()->switch_times_address_now == SWITCH_TIMES_FIRST_ADDRESS) && (PSGlobalData::Instance()->switch_times_h == 0xFF) && (PSGlobalData::Instance()->switch_times_l == 0xFF))			//当前地址为首地址
-//	{
-//		PSGlobalData::Instance()->switch_times_h = 0x00;
-//		PSGlobalData::Instance()->switch_times_l = 0x00;
-//	}
-//	PSGlobalData::Instance()->switch_times = ((uint16_t)PSGlobalData::Instance()->switch_times_h << 8) + (uint16_t)PSGlobalData::Instance()->switch_times_l;
-//	/****************************************************************************************************************************************************/
+	/***************************************************首次开关机次数的初始值设定**********************************************************************/
+	readLastSwitchTimes(PSGlobalData::Instance()->switch_times_address_now, PSGlobalData::Instance()->switch_times_h, PSGlobalData::Instance()->switch_times_l);
+	if((PSGlobalData::Instance()->switch_times_address_now == SWITCH_TIMES_FIRST_ADDRESS) && (PSGlobalData::Instance()->switch_times_h == 0xFF) && (PSGlobalData::Instance()->switch_times_l == 0xFF))			//当前地址为首地址
+	{
+		PSGlobalData::Instance()->switch_times_h = 0x00;
+		PSGlobalData::Instance()->switch_times_l = 0x00;
+	}
+	PSGlobalData::Instance()->switch_times = ((uint16_t)PSGlobalData::Instance()->switch_times_h << 8) + (uint16_t)PSGlobalData::Instance()->switch_times_l;
+	/****************************************************************************************************************************************************/
 
 	Timer spiTrasferTimer(2,2);		//SPI发送间隔定时器
 	Timer adc_freq(5,5);

@@ -14,7 +14,7 @@ private:
     void close(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin){GPIO_SetBits(GPIOx, GPIO_Pin);};		//low-trigger
 public:
     LedManager(/* args */){
-		RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);
+		
     }
     ~LedManager(){}
 
@@ -24,13 +24,9 @@ public:
     void closeLED(){close(LED_PORT, LED_PIN);}
 };
 
-void LedManager::init()
-{
-    GPIO_InitStructure.GPIO_Pin = LED_PIN;			
-	GPIO_InitStructure.GPIO_Mode=GPIO_Mode_Out_PP;
-	GPIO_InitStructure.GPIO_Speed=GPIO_Speed_50MHz;
-	GPIO_Init(LED_PORT,&GPIO_InitStructure);
-}
-
 typedef NormalSingleton<LedManager>	Led_Manager;
+
+
+
+
 #endif
