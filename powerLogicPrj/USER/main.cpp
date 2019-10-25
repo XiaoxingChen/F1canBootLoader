@@ -28,6 +28,8 @@ extern const uint8_t FIRMWARE_VERSION = 0x13;
 #include "PowerManager.h"
 #include "PdoManager.h"
 #include "LedManager.h"
+#include "BrakeManager.h"
+#include "adcManager.h"
 
 /*************************************************************************/
 const uint8_t SPI_TX_BUFFER_SIZE = 10;
@@ -43,30 +45,14 @@ int main()
 	/*****************************************NEW******************************************/
 	Power_Manager::Instance()->init();
 	
-//	power_manager.openiMX8();
-//	power_manager.openLte();
-//	power_manager.openSubIG();
-//	power_manager.openSwitch();
-//	power_manager.openWifi();
-	
 	Pdo_Manager::Instance()->pdoInit();
-	Pdo_Manager::Instance()->adcInit();
-//	PdoManager pdo_manager;
-//	
-//	pdo_manager.openPDO0();
-//	pdo_manager.openPDO1();
-//	pdo_manager.openPDO2();
-//	pdo_manager.openPDO3();
-//	pdo_manager.openPDO4();
-//	pdo_manager.openPDO5();
 	
-//	LedManager led;
-//	led.init();
-//	led.openLED();
-//	static Timer led_freq(100,100);
+	adc_Manager::Instance()->adcInit();
+	
+	Brake_Manager::Instance()->outInit();
+	
+	Brake_Manager::Instance()->inInit();
 
-	
-	
 	/***************************************************************************************/
 	key_init();							//开机按钮初始化
 	
@@ -107,32 +93,15 @@ int main()
 		powerProcess();				//电源过程
 		HeartLed_Run();
 		if(adc_freq.isAbsoluteTimeUp()){
-//			SEGGER_RTT_printf(0, "\npd0 value is %d\r\n",pdo_manager.getPDOADCAfterFilter(0));
-//			SEGGER_RTT_printf(0, "pd1 value is %d\r\n",pdo_manager.getPDOADCAfterFilter(1));
+			Pdo_Manager::Instance()->openPDO0();
+			Brake_Manager::Instance()->closeBrake();
+			SEGGER_RTT_printf(0, "\npd0 value is %d\r\n",adc_Manager::Instance()->getBrakeADC());
+			SEGGER_RTT_printf(0, "brake value is %d\r\n",Brake_Manager::Instance()->getBrakeState());
 //			SEGGER_RTT_printf(0, "pd2 value is %d\r\n",pdo_manager.getPDOADCAfterFilter(2));
 //			SEGGER_RTT_printf(0, "pd3 value is %d\r\n",pdo_manager.getPDOADCAfterFilter(3));
 //			SEGGER_RTT_printf(0, "pd4 value is %d\r\n",pdo_manager.getPDOADCAfterFilter(4));
 //			SEGGER_RTT_printf(0, "pd5 value is %d\r\n",pdo_manager.getPDOADCAfterFilter(5));
 		}
-//		if(pdo_freq.isAbsoluteTimeUp()){
-//			static bool turn = false;
-//			turn = !turn;
-//			if(turn){
-//				pdo_manager.closePDO0();
-//				pdo_manager.closePDO1();
-//				pdo_manager.closePDO2();
-//				pdo_manager.closePDO3();
-//				pdo_manager.closePDO4();
-//				pdo_manager.closePDO5();
-//			}else{
-//				pdo_manager.openPDO0();
-//				pdo_manager.openPDO1();
-//				pdo_manager.openPDO2();
-//				pdo_manager.openPDO3();
-//				pdo_manager.openPDO4();
-//				pdo_manager.openPDO5();
-//			}
-//		}
 		
 //		if(spiTrasferTimer.isAbsoluteTimeUp())
 //		{

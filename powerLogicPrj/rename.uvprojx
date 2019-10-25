@@ -482,15 +482,30 @@
               <FileType>8</FileType>
               <FilePath>.\USER\exti_monitor.cpp</FilePath>
             </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Module</GroupName>
+          <Files>
             <File>
               <FileName>PowerManager.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\PowerManager.h</FilePath>
             </File>
             <File>
+              <FileName>PowerManager.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\PowerManager.cpp</FilePath>
+            </File>
+            <File>
               <FileName>PdoManager.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\PdoManager.h</FilePath>
+            </File>
+            <File>
+              <FileName>PdoManager.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\PdoManager.cpp</FilePath>
             </File>
             <File>
               <FileName>LedManager.h</FileName>
@@ -503,14 +518,24 @@
               <FilePath>.\LedManager.cpp</FilePath>
             </File>
             <File>
-              <FileName>PdoManager.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>.\PdoManager.cpp</FilePath>
+              <FileName>BrakeManager.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\BrakeManager.h</FilePath>
             </File>
             <File>
-              <FileName>PowerManager.cpp</FileName>
+              <FileName>BrakeManager.cpp</FileName>
               <FileType>8</FileType>
-              <FilePath>.\PowerManager.cpp</FilePath>
+              <FilePath>.\BrakeManager.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>adcManager.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\adcManager.h</FilePath>
+            </File>
+            <File>
+              <FileName>adcManager.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\adcManager.cpp</FilePath>
             </File>
           </Files>
         </Group>
