@@ -86,15 +86,25 @@ int main()
 
 	Timer spiTrasferTimer(2,2);		//SPI发送间隔定时器
 	Timer adc_freq(5,5);
-	Timer pdo_freq(500,500);
+	Timer pdo_freq(5000,5000);
 
 	while(1)
 	{
+		static bool turn_ = false;
 		powerProcess();				//电源过程
 		HeartLed_Run();
+		if(pdo_freq.isAbsoluteTimeUp())
+		{
+			turn_ = !turn_;
+		}
+		if(turn_){
+			Brake_Manager::Instance()->closeBrake();
+		}else{
+			Brake_Manager::Instance()->openBrake();
+		}
 		if(adc_freq.isAbsoluteTimeUp()){
 			Pdo_Manager::Instance()->openPDO0();
-			Brake_Manager::Instance()->closeBrake();
+			//Brake_Manager::Instance()->closeBrake();
 			SEGGER_RTT_printf(0, "\npd0 value is %d\r\n",adc_Manager::Instance()->getBrakeADC());
 			SEGGER_RTT_printf(0, "brake value is %d\r\n",Brake_Manager::Instance()->getBrakeState());
 //			SEGGER_RTT_printf(0, "pd2 value is %d\r\n",pdo_manager.getPDOADCAfterFilter(2));
