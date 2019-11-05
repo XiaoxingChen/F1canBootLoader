@@ -652,6 +652,11 @@
               <FileType>8</FileType>
               <FilePath>..\F1HAL\stmflashV2.cpp</FilePath>
             </File>
+            <File>
+              <FileName>CCan.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\F1HAL\CCan.cpp</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

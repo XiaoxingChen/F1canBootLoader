@@ -36,6 +36,8 @@ const uint8_t SPI_TX_BUFFER_SIZE = 10;
 const bool DEBUG = 0;
 uint8_t spi_tx_buffer_pointer = 0;
 
+CanTxMsg tempMsg;
+
 int main()
 {
 	
@@ -52,6 +54,12 @@ int main()
 	Brake_Manager::Instance()->outInit();
 	
 	Brake_Manager::Instance()->inInit();
+	
+	CanRouter1.InitCanGpio(CCanRouter::GROUP_A11);
+	CanRouter1.InitCan();
+
+	
+	CanRouter1.runReceiver();
 
 	/***************************************************************************************/
 	key_init();							//开机按钮初始化
@@ -87,9 +95,14 @@ int main()
 	Timer spiTrasferTimer(2,2);		//SPI发送间隔定时器
 	Timer adc_freq(5,5);
 	Timer pdo_freq(5000,5000);
+	Timer can_freq(50,50);
 
 	while(1)
 	{
+		
+		CanRouter1.runTransmitter();
+		CanRouter1.runReceiver();
+		
 		static bool turn_ = false;
 		powerProcess();				//电源过程
 		HeartLed_Run();
@@ -103,14 +116,27 @@ int main()
 			Brake_Manager::Instance()->openBrake();
 		}
 		if(adc_freq.isAbsoluteTimeUp()){
-			Pdo_Manager::Instance()->openPDO0();
-			//Brake_Manager::Instance()->closeBrake();
+ 		Pdo_Manager::Instance()->openPDO0();
 			SEGGER_RTT_printf(0, "\npd0 value is %d\r\n",adc_Manager::Instance()->getBrakeADC());
 			SEGGER_RTT_printf(0, "brake value is %d\r\n",Brake_Manager::Instance()->getBrakeState());
-//			SEGGER_RTT_printf(0, "pd2 value is %d\r\n",pdo_manager.getPDOADCAfterFilter(2));
-//			SEGGER_RTT_printf(0, "pd3 value is %d\r\n",pdo_manager.getPDOADCAfterFilter(3));
-//			SEGGER_RTT_printf(0, "pd4 value is %d\r\n",pdo_manager.getPDOADCAfterFilter(4));
-//			SEGGER_RTT_printf(0, "pd5 value is %d\r\n",pdo_manager.getPDOADCAfterFilter(5));
+		}
+		
+		if(can_freq.isAbsoluteTimeUp()){
+			CanTxMsg msg;
+			msg.StdId = 0x01;
+			msg.IDE = CAN_Id_Standard;
+			msg.RTR = CAN_RTR_Data;
+			msg.DLC = 8;
+			msg.Data[0] = 0x01;
+			msg.Data[1] = 0x02;
+			msg.Data[2] = 0x03;
+			msg.Data[3] = 0x04;
+			msg.Data[4] = 0x05;
+			msg.Data[5] = 0x06;
+			msg.Data[6] = 0x07;
+			msg.Data[7] = 0x08;
+			CanRouter1.putMsg(msg);
+
 		}
 		
 //		if(spiTrasferTimer.isAbsoluteTimeUp())

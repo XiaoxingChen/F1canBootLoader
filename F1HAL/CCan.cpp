@@ -1,5 +1,6 @@
 #include "CCan.h"
 #include "Console.h"
+#include "SEGGER_RTT.h"
 
 namespace
 {
@@ -163,10 +164,16 @@ CCanRouter::CCanRouter(CAN_TypeDef* CANx,
 		CAN_Filter_FIFO_  = CAN_Filter_FIFO1;
 	else
 	{
-		Console::Instance()->postErr("CANx_ fault.");
+		//SEGGER_RTT_printf(0,"CANx_ fault.");
 		seer_assert(false);
 	}
-	
+	GPIO_InitTypeDef GPIO_InitStructure;
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8;			
+	GPIO_InitStructure.GPIO_Mode=GPIO_Mode_Out_PP;
+	GPIO_InitStructure.GPIO_Speed=GPIO_Speed_50MHz;
+	GPIO_Init(GPIOA,&GPIO_InitStructure);
+	GPIO_SetBits(GPIOA, GPIO_Pin_8);
 }
 
 /**
@@ -183,11 +190,11 @@ void CCanRouter::InitCan()
 	}else if(CANx_ == CAN1)
 	{
 	}
-	
+
 	//CAN
 	CAN_InitTypeDef CAN_InitStructure;
 	CAN_InitStructure.CAN_TTCM = DISABLE;	
-	CAN_InitStructure.CAN_ABOM = DISABLE;	
+	CAN_InitStructure.CAN_ABOM = ENABLE;	
 	CAN_InitStructure.CAN_AWUM = DISABLE;
 	CAN_InitStructure.CAN_NART = DISABLE;
 	CAN_InitStructure.CAN_RFLM = DISABLE;
@@ -205,7 +212,7 @@ void CCanRouter::InitCan()
 	else if(baudRate_ == 500000)
 	{
 		CAN_InitStructure.CAN_Prescaler = 12;
-		Console::Instance()->postErr("500K baudrate not tested");
+		//SEGGER_RTT_printf(0,"500K baudrate not tested");
 	}
 
 	CAN_Init(CANx_, &CAN_InitStructure);
@@ -249,39 +256,18 @@ void CCanRouter::InitCanGpio(int IOGroup)
 	uint8_t GPIO_AF_CANx;
 	GPIO_TypeDef *GPIOx;
 	
-	if(IOGroup == GROUP_B12)
-	{
-		RCC_APB2Periph_GPIOx = RCC_APB2Periph_GPIOB;
-		GPIOx = GPIOB;
-		GPIO_PinSource_BASE = GPIO_PinSource12;
-	}	
-	else if(IOGroup == GROUP_A11)
-	{
-		RCC_APB2Periph_GPIOx = RCC_APB2Periph_GPIOA;
-		GPIOx = GPIOA;
-		GPIO_PinSource_BASE = GPIO_PinSource11;
-	}
-	else if(IOGroup == GROUP_B8)
-	{
-		RCC_APB2Periph_GPIOx = RCC_APB2Periph_GPIOB;
-		GPIOx = GPIOB;
-		GPIO_PinSource_BASE = GPIO_PinSource8;
-		GPIO_PinRemapConfig(GPIO_Remap1_CAN1, ENABLE);
-	}
-	else seer_assert(false); //undefined!
-	
 	/* open clock of MOSI MISO SCK nCS */
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOx,  ENABLE);	
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA /*| RCC_APB2Periph_AFIO*/,  ENABLE);	
 	
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz; 
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 << GPIO_PinSource_BASE; 
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_11; 
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU; 
-	GPIO_Init(GPIOx, &GPIO_InitStructure);	
-		
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1 << GPIO_PinSource_BASE; 
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP ; 
-	GPIO_Init(GPIOx, &GPIO_InitStructure);
+	GPIO_Init(GPIOA, &GPIO_InitStructure);	
 	
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz; 
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12; 
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP ; 
+	GPIO_Init(GPIOA, &GPIO_InitStructure);
 	isGpioInitialized_ = true;
 }
 
@@ -357,8 +343,11 @@ void CCanRouter::runReceiver()
   */
 void CCanRouter::putMsg(CanTxMsg& refMsg)
 {
-	if(!txQue_.push(refMsg))
+	if(!txQue_.push(refMsg)){
+		
 		txOverflowCount_++;
+	}
+		
 }
 
 /**
@@ -368,18 +357,18 @@ void CCanRouter::putMsg(CanTxMsg& refMsg)
   */
 bool CCanRouter::attachMailbox(CCanRxMailbox* pMailbox)
 {
-		Console::Instance()->printf("CAN%d attaching mailbox: ", CANx_ == CAN1 ? 1 : 2);
+		//SEGGER_RTT_printf(0,"CAN%d attaching mailbox: ", CANx_ == CAN1 ? 1 : 2);
 	if(pMailbox->IDE() == CAN_Id_Standard)
 	{
-		Console::Instance()->printf("STD 0x%X...\r\n", pMailbox->stdId());
+		//SEGGER_RTT_printf(0,"STD 0x%X...\r\n", pMailbox->stdId());
 	}else
 	{
-		Console::Instance()->printf("EXT 0x%X...\r\n", pMailbox->extId());
+		//SEGGER_RTT_printf(0,"EXT 0x%X...\r\n", pMailbox->extId());
 	}
 
 	if(MAX_MAILBOX_NUM <= mailboxNum_) 
 	{
-		Console::Instance()->postErr("Mailbox table overflow");
+		//SEGGER_RTT_printf(0,"Mailbox table overflow");
 		return false;
 	}
 	for(int i = 0; i < mailboxNum_; i++)
@@ -388,16 +377,16 @@ bool CCanRouter::attachMailbox(CCanRxMailbox* pMailbox)
 		{
 			if(mailboxTab[i] == pMailbox)
 			{
-				Console::Instance()->printf("Mailbox already attached\r\n");
+				//SEGGER_RTT_printf(0,"Mailbox already attached\r\n");
 				return true;
 			}
 			else
-				Console::Instance()->postErr("Mailbox id conflict");
+				//SEGGER_RTT_printf(0,"Mailbox id conflict");
 			return false;
 		}
 	}
 		
-	Console::Instance()->printf("Attach finished.\r\n");
+	//SEGGER_RTT_printf(0,"Attach finished.\r\n");
 	mailboxTab[mailboxNum_] = pMailbox;
 	mailboxNum_++;
 	
